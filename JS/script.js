@@ -1,4 +1,4 @@
-var Players;
+var Players = [];
 var myScore;
 
 function startGame() {
@@ -8,8 +8,8 @@ function startGame() {
 	P2 = new Player(98, 50, 1, 20, "#FF0000", .2, .65);
 	B =  new Ball	 (50, 50, 2, 4,  "#000000",  .5);
 
-	Player.push(P1);
-	Player.push(P2);
+	Players.push(P1);
+	Players.push(P2);
 }
 
 var gameArea = {
@@ -151,6 +151,12 @@ class Component {
 		this.velocityY = 0;
 		this.friction = 1;
 	}
+
+	get top() 		{ return this.Y + this.height / 2;}
+	get bottom() 	{ return this.Y - this.height / 2;}
+	get left() 		{ return this.X - this.width / 2;}
+	get right() 	{ return this.X + this.width / 2;}
+
 	draw() {}
 	collisions() {}
 	updatePosition() {
@@ -308,7 +314,19 @@ function updateGameInfo() {
 }
 
 function gameCollisions() {
-	for(i = 0; i < Players.length(); i++) {}
+	for(let player of Players) {
+		/// Horizontal intersection
+		var min = (player.bottom < B.bottom ? player : B);
+    var max = (min == player ? B : player);
+		if(min.top >= max.bottom) {
+			///Vertical intersection
+			var min2 = (player.left < B.left ? player : B);
+			var max2 = (min2 == player ? B : player);
+				if(min2.right >= max2.left) {
+					console.log("uuuuu");
+				}
+		}
+	}
 }
 
 function updateGameArea() {
@@ -331,6 +349,8 @@ function updateGameArea() {
 	//myScore.text = player1.velocityY;
 	myScore.text = "";
 	myScore.update();
+
+	gameCollisions();
 
 	P1.update();
 	P1.draw();
