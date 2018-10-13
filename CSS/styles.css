@@ -1,0 +1,43 @@
+@import url('https://fonts.googleapis.com/css?family=Raleway');
+
+* {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	outline: 0;
+
+	font-family: "Montserrat", sans-serif;
+}
+html, body {
+	width: 100%;
+	min-height: 100vh;
+}
+
+body {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	align-content: center;
+}
+
+canvas {
+	background-color: #f1f1f1;
+}
+
+#gameInfo {
+	width: 100%;
+	overflow: hidden;
+
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-content: center;
+	align-items: center;
+}
+#player2Info {
+	text-align: right;
+}
+ul {
+	list-style-type: none;
+}
