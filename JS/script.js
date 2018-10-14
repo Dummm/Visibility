@@ -1,15 +1,17 @@
 var Players = [];
 var myScore;
+var lastRender = 0;
 
 function startGame() {
 	myScore = new component("30px", "Consolas", "black", 280, 40, "text");
 
-	P1 = new Player(2,  50, 1, 20, "#FF0000", .2, .65);
-	P2 = new Player(98, 50, 1, 20, "#FF0000", .2, .65);
-	B =  new Ball	 (50, 50, 2, 4,  "#000000",  .5);
+	P1 = new Player(98, 50, 1, 20, "#FF0000", 1, .65);
+	P2 = new Player(2,  50, 1, 20, "#FF0000", 1, .65);
+	B =  new Ball	 (50, 50, 2, 4,  "#000000", 1);
 
 	Players.push(P1);
 	Players.push(P2);
+
 }
 
 var gameArea = {
@@ -27,10 +29,13 @@ var gameArea = {
 		this.context = this.canvas.getContext("2d");
 
 		//document.body.insertBefore(this.canvas, document.body.childNodes[0]);
-		window.clearInterval(this.interval);
-		this.interval = setInterval(updateGameArea, 2);
+
+		//window.clearInterval(this.interval);
+		//this.interval = setInterval(updateGameArea, 2);
+	window.requestAnimationFrame(loop);
 	},
 	clear : function() {
+		this.context = this.canvas.getContext("2d");
 		this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 	},
 	screenRatio : function() {
@@ -159,9 +164,9 @@ class Component {
 
 	draw() {}
 	collisions() {}
-	updatePosition() {
-		this.X += this.velocityX;
-		this.Y += this.velocityY;
+	updatePosition(delta) {
+		this.X += this.velocityX * delta;
+		this.Y += this.velocityY * delta;
 
 		this.velocityX *= this.friction;
 		this.velocityY *= this.friction;
@@ -170,21 +175,26 @@ class Component {
 		this.velocityY = Math.round(this.velocityY * 1000) / 1000;
 		if(Math.abs(this.velocityX) == 0.001) this.velocityX = 0;
 		if(Math.abs(this.velocityY) == 0.001) this.velocityY = 0;
-
-		this.collisions();
 	}
-	update() {}
-	moveUp(val) {
+	update(delta) {
+		this.collisions();
+		this.updatePosition(delta);
+	}
+	moveUp() {
 		this.velocityY += this.speed;
 	}
-	moveDown(val) {
+	moveDown() {
 		this.velocityY -= this.speed;
 	}
-	moveLeft(val) {
+	moveLeft() {
 		this.velocityX -= this.speed;
 	}
-	moveRight(val) {
+	moveRight(al) {
 		this.velocityX += this.speed;
+	}
+	resetPosition() {}
+	reset() {
+		this.resetPosition();
 	}
 }
 
@@ -193,9 +203,10 @@ class Player extends Component {
 		super(x, y, width, height, color);
 		this.speed = speed;
 		this.friction = friction;
+		this.score = 0;
 	}
 	draw() {
-		ctx = gameArea.context;
+		var ctx = gameArea.context;
 		ctx.fillStyle = this.color;
 		ctx.fillRect(
 			(this.X - this.width / 2)		* gameArea.screenRatio()[0],
@@ -204,10 +215,8 @@ class Player extends Component {
 			this.height 								* gameArea.screenRatio()[1]
 		);
 	}
-	update() {
-		super.update();
-		super.updatePosition();
-		this.collisions();
+	update(delta) {
+		super.update(delta);
 	}
 	collisions() {
 		var t = this.height / 2;
@@ -221,20 +230,32 @@ class Player extends Component {
 			this.velocityY = 0;
 		}
 	}
+	addPoint() {
+		this.score++;
+	}
+	resetPosition() {
+		this.Y = 50;
+		this.velocityY = 0;
+	}
+	reset() {
+		super.reset();
+		this.score = 0;
+	}
 };
 
 class Ball extends Component {
-	constructor(x, y, width, height, color, velocity) {
+	constructor(x, y, width, height, color, speed) {
 		super(x, y, width, height, color);
 
-		//this.velocityX = velocity * (Math.random() < 0.5 ? -1 : 1);
+		this.velocityX = speed * (Math.random() < 0.5 ? -1 : 1);
 		//this.velocityY = 0;
-		this.velocityX = velocity * (Math.random() * 2 - 1);
-		this.velocityY = velocity * (Math.random() * 2 - 1);
+		this.speed = speed;
+		//this.velocityX = speed * (Math.random() * 2 - 1);
+		this.velocityY = speed * (Math.random() * 2 - 1);
 
 	}
 	draw() {
-		ctx = gameArea.context;
+		var ctx = gameArea.context;
 		ctx.fillStyle = this.color;
 		ctx.fillRect(
 			(this.X - this.width / 2)		* gameArea.screenRatio()[0],
@@ -243,10 +264,8 @@ class Ball extends Component {
 			this.height 								* gameArea.screenRatio()[1]
 		);
 	}
-	update() {
-		super.update();
-		super.updatePosition();
-		this.collisions();
+	update(delta) {
+		super.update(delta);
 	}
 	collisions() {
 		var t = this.height / 2;
@@ -254,14 +273,6 @@ class Ball extends Component {
 		var l = this.width / 2;
 		var r = 100 - this.width / 2;
 
-		if(this.X < l) {
-			this.velocityX *=  -1;
-			this.X = l;
-		}
-		if(this.X > r) {
-			this.velocityX *=  -1;
-			this.X = r;
-		}
 		if(this.Y < t) {
 			this.velocityY *= -1;
 			this.Y = t;
@@ -270,6 +281,17 @@ class Ball extends Component {
 			this.velocityY *= -1;
 			this.Y = b;
 		}
+	}
+	resetPosition() {
+		this.X = this.Y = 50;
+		//this.velocityX = this.speed * (Math.random() * 2 - 1);
+		//this.velocityX = this.speed * (Math.random() < 0.5 ? -1 : 1);
+		//this.velocityY = this.speed * (Math.random() * 2 - 1);
+		this.velocityY = 0;
+		this.velocityX = -1;
+	}
+	reset() {
+		super.reset();
 	}
 }
 
@@ -284,6 +306,7 @@ function updateGameInfo() {
 		<li><b>Y: </b>" 				+ P1.Y + "</li> \
 		<li><b>Speed: </b>" 		+ P1.speed + "</li> \
 		<li><b>Friction: </b>" 	+ P1.friction + "</li> \
+		<li><b>Score: </b>" 	+ P1.score + "</li> \
 	</ul> \
 	";
 	var bInfo = document.getElementById("ballInfo");
@@ -309,11 +332,13 @@ function updateGameInfo() {
 		<li><b>Y: </b>" 				+ P2.Y + "</li> \
 		<li><b>Speed: </b>" 		+ P2.speed + "</li> \
 		<li><b>Friction: </b>" 	+ P2.friction + "</li> \
+		<li><b>Score: </b>" 	+ P2.score + "</li> \
 	</ul> \
 	";
 }
 
 function gameCollisions() {
+	/// Ball & Player
 	for(let player of Players) {
 		/// Horizontal intersection
 		var min = (player.bottom < B.bottom ? player : B);
@@ -323,14 +348,44 @@ function gameCollisions() {
 			var min2 = (player.left < B.left ? player : B);
 			var max2 = (min2 == player ? B : player);
 				if(min2.right >= max2.left) {
-					console.log("uuuuu");
+					if(player == P1) {
+						//console.log("dreapta");
+						B.X = player.left - B.width / 2;
+						//B.X = player.X;
+						B.velocityX *= -1;
+						break;
+					}
+					else {
+						//console.log("stanga");
+						B.X = player.right + B.width / 2;
+						//B.X = player.X;
+						B.velocityX *= -1;
+						break;
+					}
 				}
 		}
 	}
+
+	/// Ball & Bounds
+	if(B.left < 0) {
+		B.resetPosition();
+		for(let player of Players) {
+			player.resetPosition();
+		}
+		//console.log("mgm");
+		P1.addPoint();
+	}
+	if(B.right > 100) {
+		B.resetPosition();
+		for(let player of Players) {
+			player.resetPosition();
+		}
+		//console.log("mhm");
+		P2.addPoint();
+	}
 }
 
-function updateGameArea() {
-	updateGameInfo();
+function drawGameArea() {
 	gameArea.clear();
 	gameArea.context.beginPath();
 	gameArea.context.moveTo(gameArea.canvas.width / 2, 							 			0);
@@ -338,27 +393,13 @@ function updateGameArea() {
 	gameArea.context.strokeStyle = "#E2E2E2";
 	gameArea.context.lineWidth = 1.5;
 	gameArea.context.stroke();
-	/*
-	myScore.text =
-		(player1.X			* gameArea.screenRatio()[0]) + "\n" +
-		(player1.Y			* gameArea.screenRatio()[1]) + "\n" +
-		(player1.width  * gameArea.screenRatio()[0]) + "\n" +
-		(player1.height * gameArea.screenRatio()[1]) + "\n" +
-		player1.velocityY;
-	*/
-	//myScore.text = player1.velocityY;
-	myScore.text = "";
-	myScore.update();
-
+}
+function updateObjects(p) {
 	gameCollisions();
 
-	P1.update();
-	P1.draw();
-	P2.update();
-	P2.draw();
-	B.update();
-	B.draw();
-
+	P1.update(p);
+	P2.update(p);
+	B.update(p);
 
 	if (keyState[38]) {
 		P1.moveDown();
@@ -373,6 +414,36 @@ function updateGameArea() {
 		P2.moveUp();
 	}
 }
+function updateUI() {
+	myScore.text = "";
+	//myScore.update();
+}
+
+function drawObjects() {
+	P1.draw();
+	P2.draw();
+	B.draw();
+}
+function drawUI() {
+
+}
+
+
+function loop(timestamp) {
+  var progress = timestamp - lastRender;
+	progress /= 16;
+	//console.log(progress);
+	updateGameInfo();
+	updateObjects(progress);
+	updateUI();
+
+	drawGameArea();
+	drawObjects();
+
+  lastRender = timestamp;
+  window.requestAnimationFrame(loop);
+}
+
 
 var keyState = {};
 window.addEventListener('keydown', function(e) {

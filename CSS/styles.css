@@ -35,7 +35,10 @@ canvas {
 	align-content: center;
 	align-items: center;
 }
-#player2Info {
+#gameInfo * {
+	flex: 1;
+}
+#player1Info {
 	text-align: right;
 }
 ul {
