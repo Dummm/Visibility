@@ -32,7 +32,7 @@ var gameArea = {
 
 		//window.clearInterval(this.interval);
 		//this.interval = setInterval(updateGameArea, 2);
-	window.requestAnimationFrame(loop);
+		window.requestAnimationFrame(loop);
 	},
 	clear : function() {
 		this.context = this.canvas.getContext("2d");
@@ -332,7 +332,7 @@ function updateGameInfo() {
 		<li><b>Y: </b>" 				+ P2.Y + "</li> \
 		<li><b>Speed: </b>" 		+ P2.speed + "</li> \
 		<li><b>Friction: </b>" 	+ P2.friction + "</li> \
-		<li><b>Score: </b>" 	+ P2.score + "</li> \
+		<li><b>Score: </b>" 		+ P2.score + "</li> \
 	</ul> \
 	";
 }
@@ -433,6 +433,7 @@ function loop(timestamp) {
   var progress = timestamp - lastRender;
 	progress /= 16;
 	//console.log(progress);
+	console.log(progress);
 	updateGameInfo();
 	updateObjects(progress);
 	updateUI();
