@@ -1,17 +1,28 @@
 var Players = [];
 var myScore;
 var lastRender = 0;
+var paused = true;
+
+//var col_BGMain 	= "#051CFF";
+var col_BGMain 	= 'hsl(' + (360 * Math.random()) +', 100%, 50%)';
+var col_BGSec 	= "#FFFFFF";
+var col_P1 			= "#FFFFFF";
+var col_P2 			= "#FFFFFF";
+var col_B 			= "#FFFFFF";
 
 function startGame() {
-	myScore = new component("30px", "Consolas", "black", 280, 40, "text");
+	// = new component("30px", "Consolas", "black", 280, 40, "text");
 
-	P1 = new Player(98, 50, 1, 20, "#FF0000", 1, .65);
-	P2 = new Player(2,  50, 1, 20, "#FF0000", 1, .65);
-	B =  new Ball	 (50, 50, 2, 4,  "#000000", 1);
+	P1 = new Player(98, 50, 1, 20, col_P1, 1, .5);
+	P2 = new Player(2,  50, 1, 20, col_P2, 1, .5);
+	B =  new Ball	 (50, 50, 2, 4,  col_B , 1);
+	p1Score = new UI(52.5, 10, "'Oswald'", 7, "normal", "#FFFFFF", "left",  P1);
+	p2Score = new UI(47.5, 10, "'Oswald'", 7, "normal", "#FFFFFF", "right", P2);
 
 	Players.push(P1);
 	Players.push(P2);
-
+	window.requestAnimationFrame(loop);
+	//paused = false;
 }
 
 var gameArea = {
@@ -32,115 +43,45 @@ var gameArea = {
 
 		//window.clearInterval(this.interval);
 		//this.interval = setInterval(updateGameArea, 2);
-		window.requestAnimationFrame(loop);
+		//window.requestAnimationFrame(loop);
+		paused = false;
 	},
 	clear : function() {
 		this.context = this.canvas.getContext("2d");
 		this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+		this.context.fillStyle = col_BGMain;
+		//this.context.fillStyle = 'hsl(' + (360 * Math.random()) +', 100%, 50%)';
+		this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
 	},
 	screenRatio : function() {
 		return [(this.canvas.width  / 100), (this.canvas.height / 100)];
 	}
 }
 
-function component(width, height, color, x, y, type) {
-	this.type = type;
-	this.score = 0;
-	this.width = width;
-	this.height = height;
-
-	this.speed = .2;
-	//this.maxSpeed = 2
-	this.velocityX = 0;
-	this.velocityY = 0;
-	this.friction = 0.65;
-
-	this.X = x;
-	this.Y = y;
-
-	this.update = function() {
-		ctx = gameArea.context;
-		if (this.type == "text") {
-			ctx.font = this.width + " " + this.height;
-			ctx.fillStyle = color;
-			ctx.fillText(
-				this.text,
-				this.X * gameArea.screenRatio()[0],
-				this.Y * gameArea.screenRatio()[1]);
-		} else {
-			ctx.fillStyle = color;
-			//ctx.fillRect(this.X, this.Y, this.width, this.height);
-			ctx.fillRect(
-				(this.X - this.width / 2)		* gameArea.screenRatio()[0],
-				(this.Y - this.height / 2)	* gameArea.screenRatio()[1],
-				this.width  								* gameArea.screenRatio()[0],
-				this.height 								* gameArea.screenRatio()[1]
-			);
-		}
-
-		this.velocityX = Math.round(this.velocityX * 1000) / 1000;
-		this.velocityY = Math.round(this.velocityY * 1000) / 1000;
-		if(Math.abs(this.velocityX) == 0.001) this.velocityX = 0;
-		if(Math.abs(this.velocityY) == 0.001) this.velocityY = 0;
+class UI {
+	constructor(x, y, font, fontSize, fontWeight, color, align, comp) {
+		this.X = x;
+		this.Y = y;
+		this.font = font;
+		this.fontSize = fontSize;
+		this.fontWeight = fontWeight;
+		this.color = color;
+		this.align = align;
+		this.comp = comp;
 	}
-	this.moveUp = function(val) {
-		this.velocityY += this.speed;
-	}
-	this.moveDown = function(val) {
-		this.velocityY -= this.speed;
-	}
-	this.moveLeft = function(val) {
-		this.velocityX -= this.speed;
-	}
-	this.moveRight = function(val) {
-		this.velocityX += this.speed;
-	}
-	this.newPos = function() {
-		this.X += this.velocityX;
-		this.Y += this.velocityY;
-
-		this.velocityY *= this.friction;
-		this.velocityX *= this.friction;
-
-		if(this.type != "ball") {
-			this.hitBottom();
-			this.hitTop();
-		}
-		else {
-
-		}
-	}
-	this.ricochet = function() {
-
-	}
-	this.hitBottom = function() {
-		var b = 100 - this.height / 2;
-		if (this.Y > b) {
-			this.Y = b;
-			this.velocityY = 0;
-		}
-	}
-	this.hitTop = function() {
-		var t = this.height / 2;
-		if (this.Y < t) {
-			this.Y = t;
-			this.velocityY = 0;
-		}
-	}
-	this.crashWith = function(otherobj) {
-		var myleft = this.X;
-		var myright = this.X + (this.width);
-		var mytop = this.Y;
-		var mybottom = this.Y + (this.height);
-		var otherleft = otherobj.X;
-		var otherright = otherobj.X + (otherobj.width);
-		var othertop = otherobj.Y;
-		var otherbottom = otherobj.Y + (otherobj.height);
-		var crash = true;
-		if ((mybottom < othertop) || (mytop > otherbottom) || (myright < otherleft) || (myleft > otherright)) {
-			crash = false;
-		}
-		return crash;
+	draw() {
+		var ctx = gameArea.context;
+		ctx.font =
+			this.fontWeight + " " +
+			(this.fontSize * gameArea.screenRatio()[1]) + "px " +
+			this.font;
+		//ctx.font = "30px Consolas";
+		ctx.fillStyle = this.color;
+		ctx.textAlign = this.align;
+		ctx.fillText(
+			this.comp.data,
+			this.X * gameArea.screenRatio()[0],
+			this.Y * gameArea.screenRatio()[1]);
 	}
 }
 
@@ -155,12 +96,14 @@ class Component {
 		this.velocityX = 0;
 		this.velocityY = 0;
 		this.friction = 1;
+		this.color = color;
 	}
 
-	get top() 		{ return this.Y + this.height / 2;}
-	get bottom() 	{ return this.Y - this.height / 2;}
-	get left() 		{ return this.X - this.width / 2;}
-	get right() 	{ return this.X + this.width / 2;}
+	get top() 		{ return this.Y + this.height / 2; }
+	get bottom() 	{ return this.Y - this.height / 2; }
+	get left() 		{ return this.X - this.width  / 2; }
+	get right() 	{ return this.X + this.width  / 2; }
+	get data() {}
 
 	draw() {}
 	collisions() {}
@@ -205,6 +148,7 @@ class Player extends Component {
 		this.friction = friction;
 		this.score = 0;
 	}
+	get data() { return this.score }
 	draw() {
 		var ctx = gameArea.context;
 		ctx.fillStyle = this.color;
@@ -247,22 +191,33 @@ class Ball extends Component {
 	constructor(x, y, width, height, color, speed) {
 		super(x, y, width, height, color);
 
-		this.velocityX = speed * (Math.random() < 0.5 ? -1 : 1);
+		//this.velocityX = speed * (Math.random() < 0.5 ? -1 : 1);
 		//this.velocityY = 0;
 		this.speed = speed;
+		this.rotation = 0;
 		//this.velocityX = speed * (Math.random() * 2 - 1);
-		this.velocityY = speed * (Math.random() * 2 - 1);
+		//this.velocityY = speed * (Math.random() * 2 - 1);
+		this.newDirection();
 
 	}
 	draw() {
 		var ctx = gameArea.context;
+		ctx.save();
+		ctx.translate(
+			(this.X + this.width / 2)	* gameArea.screenRatio()[0],
+			(this.Y + this.height / 2)	* gameArea.screenRatio()[1]
+		);
+		ctx.rotate(this.rotation * Math.PI / 180);
+		this.rotation += 2;
+
 		ctx.fillStyle = this.color;
 		ctx.fillRect(
-			(this.X - this.width / 2)		* gameArea.screenRatio()[0],
-			(this.Y - this.height / 2)	* gameArea.screenRatio()[1],
+			(-this.width / 2)		* gameArea.screenRatio()[0],
+			(-this.height / 2)	* gameArea.screenRatio()[1],
 			this.width  								* gameArea.screenRatio()[0],
 			this.height 								* gameArea.screenRatio()[1]
 		);
+		ctx.restore();
 	}
 	update(delta) {
 		super.update(delta);
@@ -287,11 +242,16 @@ class Ball extends Component {
 		//this.velocityX = this.speed * (Math.random() * 2 - 1);
 		//this.velocityX = this.speed * (Math.random() < 0.5 ? -1 : 1);
 		//this.velocityY = this.speed * (Math.random() * 2 - 1);
-		this.velocityY = 0;
-		this.velocityX = -1;
+		//this.velocityY = 0;
+		//this.velocityX = -1;
+		this.newDirection();
 	}
 	reset() {
 		super.reset();
+	}
+	newDirection() {
+		this.velocityX = this.speed * (Math.random() < 0.5 ? -1 : 1);
+		this.velocityY = this.speed * (Math.random() * 2 - 1);
 	}
 }
 
@@ -353,6 +313,7 @@ function gameCollisions() {
 						B.X = player.left - B.width / 2;
 						//B.X = player.X;
 						B.velocityX *= -1;
+						col_BGMain 	= 'hsl(' + (360 * Math.random()) +', 100%, 50%)';
 						break;
 					}
 					else {
@@ -360,6 +321,7 @@ function gameCollisions() {
 						B.X = player.right + B.width / 2;
 						//B.X = player.X;
 						B.velocityX *= -1;
+						col_BGMain 	= 'hsl(' + (360 * Math.random()) +', 100%, 50%)';
 						break;
 					}
 				}
@@ -390,8 +352,8 @@ function drawGameArea() {
 	gameArea.context.beginPath();
 	gameArea.context.moveTo(gameArea.canvas.width / 2, 							 			0);
 	gameArea.context.lineTo(gameArea.canvas.width / 2, gameArea.canvas.height);
-	gameArea.context.strokeStyle = "#E2E2E2";
-	gameArea.context.lineWidth = 1.5;
+	gameArea.context.strokeStyle = col_BGSec;
+	gameArea.context.lineWidth = 2;
 	gameArea.context.stroke();
 }
 function updateObjects(p) {
@@ -414,9 +376,9 @@ function updateObjects(p) {
 		P2.moveUp();
 	}
 }
-function updateUI() {
-	myScore.text = "";
-	//myScore.update();
+function drawUI() {
+	p1Score.draw();
+	p2Score.draw();
 }
 
 function drawObjects() {
@@ -424,22 +386,23 @@ function drawObjects() {
 	P2.draw();
 	B.draw();
 }
-function drawUI() {
-
-}
 
 
 function loop(timestamp) {
   var progress = timestamp - lastRender;
 	progress /= 16;
 	//console.log(progress);
-	console.log(progress);
-	updateGameInfo();
-	updateObjects(progress);
-	updateUI();
+	//if(paused) progress = 0;
+	if(!paused) {
+		//console.log(progress);
+		updateGameInfo();
+		updateObjects(progress);
 
-	drawGameArea();
-	drawObjects();
+		drawGameArea();
+		drawUI();
+		drawObjects();
+	}
+
 
   lastRender = timestamp;
   window.requestAnimationFrame(loop);
