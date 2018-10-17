@@ -380,7 +380,9 @@ function drawObjects() {
 
 window.addEventListener('keydown', function(e) {
 		keyStates[e.keyCode || e.which] = true;
-		e.preventDefault();
+		if(e.keyCode == 192) showConsole = !showConsole;
+		if(e.keyCode != 116)
+			e.preventDefault();
 }, true);
 window.addEventListener('keyup', function(e) {
     keyStates[e.keyCode || e.which] = false;
