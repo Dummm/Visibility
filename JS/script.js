@@ -1,18 +1,16 @@
-var Players = [];
-var myScore;
-var lastRender = 0;
+var showConsole = false;
+var keyStates = {};
 var paused = true;
+var lastRender = 0;
+var Players = [];
 
-//var col_BGMain 	= "#051CFF";
-var col_BGMain 	= 'hsl(' + (360 * Math.random()) +', 100%, 50%)';
+var col_BGMain 	= col_Title = 'hsl(' + (360 * Math.random()) +', 100%, 50%)';
 var col_BGSec 	= "#FFFFFF";
 var col_P1 			= "#FFFFFF";
 var col_P2 			= "#FFFFFF";
 var col_B 			= "#FFFFFF";
 
 function startGame() {
-	// = new component("30px", "Consolas", "black", 280, 40, "text");
-
 	P1 = new Player(98, 50, 1, 20, col_P1, 1, .5);
 	P2 = new Player(2,  50, 1, 20, col_P2, 1, .5);
 	B =  new Ball	 (50, 50, 2, 4,  col_B , 1);
@@ -22,11 +20,23 @@ function startGame() {
 	Players.push(P1);
 	Players.push(P2);
 	window.requestAnimationFrame(loop);
-	//paused = false;
 }
+function loop(timestamp) {
+  var progress = timestamp - lastRender;
+	progress /= 16;
+	if(!paused) {
+		updateGameInfo();
+		updateObjects(progress);
 
+		drawGameArea();
+		drawUI();
+		drawObjects();
+	}
+
+  lastRender = timestamp;
+  window.requestAnimationFrame(loop);
+}
 var gameArea = {
-	//canvas : document.createElement("canvas"),
 	canvas : document.getElementById("gameArea"),
 	start : function() {
 		if(window.innerHeight > window.innerWidth / 2) {
@@ -38,19 +48,12 @@ var gameArea = {
 			this.canvas.height = window.innerHeight;
 		}
 		this.context = this.canvas.getContext("2d");
-
-		//document.body.insertBefore(this.canvas, document.body.childNodes[0]);
-
-		//window.clearInterval(this.interval);
-		//this.interval = setInterval(updateGameArea, 2);
-		//window.requestAnimationFrame(loop);
 		paused = false;
 	},
 	clear : function() {
 		this.context = this.canvas.getContext("2d");
 		this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 		this.context.fillStyle = col_BGMain;
-		//this.context.fillStyle = 'hsl(' + (360 * Math.random()) +', 100%, 50%)';
 		this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
 	},
 	screenRatio : function() {
@@ -75,7 +78,6 @@ class UI {
 			this.fontWeight + " " +
 			(this.fontSize * gameArea.screenRatio()[1]) + "px " +
 			this.font;
-		//ctx.font = "30px Consolas";
 		ctx.fillStyle = this.color;
 		ctx.textAlign = this.align;
 		ctx.fillText(
@@ -84,7 +86,6 @@ class UI {
 			this.Y * gameArea.screenRatio()[1]);
 	}
 }
-
 class Component {
 	constructor(x, y, width, height, color) {
 		this.X = x;
@@ -140,7 +141,6 @@ class Component {
 		this.resetPosition();
 	}
 }
-
 class Player extends Component {
 	constructor(x, y, width, height, color, speed, friction) {
 		super(x, y, width, height, color);
@@ -186,7 +186,6 @@ class Player extends Component {
 		this.score = 0;
 	}
 };
-
 class Ball extends Component {
 	constructor(x, y, width, height, color, speed) {
 		super(x, y, width, height, color);
@@ -256,47 +255,53 @@ class Ball extends Component {
 }
 
 function updateGameInfo() {
-	var p1Info = document.getElementById("player1Info");
-	p1Info.innerHTML = "\
-	<ul> \
-		<li><b>Width: </b>" 		+ P1.width + "</li> \
-		<li><b>Height: </b>" 		+ P1.height + "</li> \
-		<li><b>Velocity: </b>" 	+ P1.velocityY + "</li> \
-		<li><b>X: </b>" 				+ P1.X + "</li> \
-		<li><b>Y: </b>" 				+ P1.Y + "</li> \
-		<li><b>Speed: </b>" 		+ P1.speed + "</li> \
-		<li><b>Friction: </b>" 	+ P1.friction + "</li> \
-		<li><b>Score: </b>" 	+ P1.score + "</li> \
-	</ul> \
-	";
-	var bInfo = document.getElementById("ballInfo");
-	bInfo.innerHTML = "\
-	<ul> \
-		<li><b>Width: </b>" 		+ B.width + "</li> \
-		<li><b>Height: </b>" 		+ B.height + "</li> \
-		<li><b>VelocityX: </b>" + B.velocityX + "</li> \
-		<li><b>VelocityY: </b>" + B.velocityY + "</li> \
-		<li><b>X: </b>" 				+ B.X + "</li> \
-		<li><b>Y: </b>" 				+ B.Y + "</li> \
-		<li><b>Speed: </b>" 		+ B.speed + "</li> \
-		<li><b>Friction: </b>" 	+ B.friction + "</li> \
-	</ul> \
-	";
-	var p2Info = document.getElementById("player2Info");
-	p2Info.innerHTML = "\
-	<ul> \
-		<li><b>Width: </b>" 		+ P2.width + "</li> \
-		<li><b>Height: </b>" 		+ P2.height + "</li> \
-		<li><b>Velocity: </b>" 	+ P2.velocityY + "</li> \
-		<li><b>X: </b>" 				+ P2.X + "</li> \
-		<li><b>Y: </b>" 				+ P2.Y + "</li> \
-		<li><b>Speed: </b>" 		+ P2.speed + "</li> \
-		<li><b>Friction: </b>" 	+ P2.friction + "</li> \
-		<li><b>Score: </b>" 		+ P2.score + "</li> \
-	</ul> \
-	";
+	var con = document.getElementById("gameInfo");
+	if(!showConsole) {
+		con.setAttribute("style", "display: none;");
+	}
+	else {
+		con.setAttribute("style", "display: flex;");
+		var p1Info = document.getElementById("player1Info");
+		p1Info.innerHTML = "\
+		<ul> \
+			<li><b>Width: </b>" 		+ P1.width + "</li> \
+			<li><b>Height: </b>" 		+ P1.height + "</li> \
+			<li><b>Velocity: </b>" 	+ P1.velocityY + "</li> \
+			<li><b>X: </b>" 				+ P1.X + "</li> \
+			<li><b>Y: </b>" 				+ P1.Y + "</li> \
+			<li><b>Speed: </b>" 		+ P1.speed + "</li> \
+			<li><b>Friction: </b>" 	+ P1.friction + "</li> \
+			<li><b>Score: </b>" 	+ P1.score + "</li> \
+		</ul> \
+		";
+		var bInfo = document.getElementById("ballInfo");
+		bInfo.innerHTML = "\
+		<ul> \
+			<li><b>Width: </b>" 		+ B.width + "</li> \
+			<li><b>Height: </b>" 		+ B.height + "</li> \
+			<li><b>VelocityX: </b>" + B.velocityX + "</li> \
+			<li><b>VelocityY: </b>" + B.velocityY + "</li> \
+			<li><b>X: </b>" 				+ B.X + "</li> \
+			<li><b>Y: </b>" 				+ B.Y + "</li> \
+			<li><b>Speed: </b>" 		+ B.speed + "</li> \
+			<li><b>Friction: </b>" 	+ B.friction + "</li> \
+		</ul> \
+		";
+		var p2Info = document.getElementById("player2Info");
+		p2Info.innerHTML = "\
+		<ul> \
+			<li><b>Width: </b>" 		+ P2.width + "</li> \
+			<li><b>Height: </b>" 		+ P2.height + "</li> \
+			<li><b>Velocity: </b>" 	+ P2.velocityY + "</li> \
+			<li><b>X: </b>" 				+ P2.X + "</li> \
+			<li><b>Y: </b>" 				+ P2.Y + "</li> \
+			<li><b>Speed: </b>" 		+ P2.speed + "</li> \
+			<li><b>Friction: </b>" 	+ P2.friction + "</li> \
+			<li><b>Score: </b>" 		+ P2.score + "</li> \
+		</ul> \
+		";
+	}
 }
-
 function gameCollisions() {
 	/// Ball & Player
 	for(let player of Players) {
@@ -307,24 +312,20 @@ function gameCollisions() {
 			///Vertical intersection
 			var min2 = (player.left < B.left ? player : B);
 			var max2 = (min2 == player ? B : player);
-				if(min2.right >= max2.left) {
-					if(player == P1) {
-						//console.log("dreapta");
-						B.X = player.left - B.width / 2;
-						//B.X = player.X;
-						B.velocityX *= -1;
-						col_BGMain 	= 'hsl(' + (360 * Math.random()) +', 100%, 50%)';
-						break;
-					}
-					else {
-						//console.log("stanga");
-						B.X = player.right + B.width / 2;
-						//B.X = player.X;
-						B.velocityX *= -1;
-						col_BGMain 	= 'hsl(' + (360 * Math.random()) +', 100%, 50%)';
-						break;
-					}
+			if(min2.right >= max2.left) {
+				if(player == P1) {
+					B.X = player.left - B.width / 2;
+					B.velocityX *= -1;
+					col_BGMain = col_Title= 'hsl(' + (360 * Math.random()) +', 100%, 50%)';
+					break;
 				}
+				else {
+					B.X = player.right + B.width / 2;
+					B.velocityX *= -1;
+					col_BGMain = col_Title= 'hsl(' + (360 * Math.random()) +', 100%, 50%)';
+					break;
+				}
+			}
 		}
 	}
 
@@ -334,7 +335,6 @@ function gameCollisions() {
 		for(let player of Players) {
 			player.resetPosition();
 		}
-		//console.log("mgm");
 		P1.addPoint();
 	}
 	if(B.right > 100) {
@@ -342,9 +342,19 @@ function gameCollisions() {
 		for(let player of Players) {
 			player.resetPosition();
 		}
-		//console.log("mhm");
 		P2.addPoint();
 	}
+}
+function updateObjects(p) {
+	gameCollisions();
+	P1.update(p);
+	P2.update(p);
+	B.update(p);
+
+	if (keyStates[38]) { P1.moveDown(); }
+	if (keyStates[40]) { P1.moveUp(); }
+	if (keyStates[87]) { P2.moveDown(); }
+	if (keyStates[83]) { P2.moveUp(); }
 }
 
 function drawGameArea() {
@@ -356,69 +366,26 @@ function drawGameArea() {
 	gameArea.context.lineWidth = 2;
 	gameArea.context.stroke();
 }
-function updateObjects(p) {
-	gameCollisions();
-
-	P1.update(p);
-	P2.update(p);
-	B.update(p);
-
-	if (keyState[38]) {
-		P1.moveDown();
-	}
-	if (keyState[40]) {
-		P1.moveUp();
-	}
-	if (keyState[87]) {
-		P2.moveDown();
-	}
-	if (keyState[83]) {
-		P2.moveUp();
-	}
-}
 function drawUI() {
 	p1Score.draw();
 	p2Score.draw();
+	document.getElementById("gameTitle")
+		.setAttribute("style", "color: " + col_Title + ";");
 }
-
 function drawObjects() {
 	P1.draw();
 	P2.draw();
 	B.draw();
 }
 
-
-function loop(timestamp) {
-  var progress = timestamp - lastRender;
-	progress /= 16;
-	//console.log(progress);
-	//if(paused) progress = 0;
-	if(!paused) {
-		//console.log(progress);
-		updateGameInfo();
-		updateObjects(progress);
-
-		drawGameArea();
-		drawUI();
-		drawObjects();
-	}
-
-
-  lastRender = timestamp;
-  window.requestAnimationFrame(loop);
-}
-
-
-var keyState = {};
 window.addEventListener('keydown', function(e) {
-		keyState[e.keyCode || e.which] = true;
+		keyStates[e.keyCode || e.which] = true;
 		e.preventDefault();
 }, true);
 window.addEventListener('keyup', function(e) {
-    keyState[e.keyCode || e.which] = false;
+    keyStates[e.keyCode || e.which] = false;
 		e.preventDefault();
 }, true);
-
 window.addEventListener('resize', (event) => {
 	if(window.innerHeight > window.innerWidth / 2) {
 		gameArea.canvas.width = window.innerWidth;
@@ -430,12 +397,3 @@ window.addEventListener('resize', (event) => {
 	}
 	console.log("muie");
 });
-/*
-window.addEventListener('keyup', (event) => {
-});
-window.addEventListener('keydown', (event) => {
-	if(event.keyCode == 13) gameArea.start(), event.preventDefault();
-	if(event.keyCode == 38) player1.moveDown(), event.preventDefault();
-	if(event.keyCode == 40) player1.moveUp()	, event.preventDefault();
-});
-*/
