@@ -4,15 +4,16 @@ var paused = true;
 var lastRender = 0;
 var Players = [];
 
-var col_BGMain 	= col_Title = 'hsl(' + (360 * Math.random()) +', 100%, 50%)';
+var col_BGMain 	= 'hsl(' + (360 * Math.random()) +', 100%, 50%)';
+var col_Title 	= col_BGMain;
 var col_BGSec 	= "#FFFFFF";
 var col_P1 			= "#FFFFFF";
 var col_P2 			= "#FFFFFF";
 var col_B 			= "#FFFFFF";
 
 function startGame() {
-	P1 = new Player(98, 50, 1, 20, col_P1, 1, .5);
-	P2 = new Player(2,  50, 1, 20, col_P2, 1, .5);
+	P1 = new Player(98, 50, 1, 20, col_P1, 1, 0.5);
+	P2 = new Player(2,  50, 1, 20, col_P2, 1, 0.5);
 	B =  new Ball	 (50, 50, 2, 4,  col_B , 1);
 	p1Score = new UI(52.5, 10, "'Oswald'", 7, "normal", "#FFFFFF", "left",  P1);
 	p2Score = new UI(47.5, 10, "'Oswald'", 7, "normal", "#FFFFFF", "right", P2);
@@ -59,7 +60,7 @@ var gameArea = {
 	screenRatio : function() {
 		return [(this.canvas.width  / 100), (this.canvas.height / 100)];
 	}
-}
+};
 
 class UI {
 	constructor(x, y, font, fontSize, fontWeight, color, align, comp) {
@@ -148,7 +149,7 @@ class Player extends Component {
 		this.friction = friction;
 		this.score = 0;
 	}
-	get data() { return this.score }
+	get data() { return this.score; }
 	draw() {
 		var ctx = gameArea.context;
 		ctx.fillStyle = this.color;
@@ -185,7 +186,7 @@ class Player extends Component {
 		super.reset();
 		this.score = 0;
 	}
-};
+}
 class Ball extends Component {
 	constructor(x, y, width, height, color, speed) {
 		super(x, y, width, height, color);
@@ -220,6 +221,12 @@ class Ball extends Component {
 	}
 	update(delta) {
 		super.update(delta);
+		console.log(
+			Math.atan2(this.velocityY, this.velocityX) / (Math.PI/180) + " " +
+			//Math.atan2(this.velocitYX, this.velocityX) + " " +
+			//(270 + Math.atan2(this.velocityX, this.velocityY) / (Math.PI/180)) % 360 + " " +
+			Math.sqrt(this.velocityX*this.velocityX + this.velocityY*this.velocityY)
+		);
 	}
 	collisions() {
 		var t = this.height / 2;
@@ -313,16 +320,27 @@ function gameCollisions() {
 			var min2 = (player.left < B.left ? player : B);
 			var max2 = (min2 == player ? B : player);
 			if(min2.right >= max2.left) {
+				var dif, angle, magn;
 				if(player == P1) {
+					//B.velocityX *= -1;
+					dif = Math.abs(B.Y - player.Y);
+					magn = Math.sqrt(B.velocityX * B.velocityX + B.velocityY * B.velocityY);
+					angle = (-(dif * 45 / (player.height / 2)) + 180) * Math.sign(B.Y - player.Y);
+					B.velocityX = Math.cos(angle * (Math.PI / 180)) * magn;
+					B.velocityY = Math.sin(angle * (Math.PI / 180)) * magn;
 					B.X = player.left - B.width / 2;
-					B.velocityX *= -1;
-					col_BGMain = col_Title= 'hsl(' + (360 * Math.random()) +', 100%, 50%)';
+					col_BGMain = col_Title = 'hsl(' + (360 * Math.random()) +', 100%, 50%)';
 					break;
 				}
 				else {
+					//B.velocityX *= -1;
+					dif = Math.abs(B.Y - player.Y);
+					magn = Math.sqrt(B.velocityX * B.velocityX + B.velocityY * B.velocityY);
+					angle = (dif * 45 / (player.height / 2)) * Math.sign(B.Y - player.Y);
+					B.velocityX = Math.cos(angle * (Math.PI / 180)) * magn;
+					B.velocityY = Math.sin(angle * (Math.PI / 180)) * magn;
 					B.X = player.right + B.width / 2;
-					B.velocityX *= -1;
-					col_BGMain = col_Title= 'hsl(' + (360 * Math.random()) +', 100%, 50%)';
+					col_BGMain = col_Title = 'hsl(' + (360 * Math.random()) +', 100%, 50%)';
 					break;
 				}
 			}
@@ -389,6 +407,7 @@ window.addEventListener('keyup', function(e) {
 		e.preventDefault();
 }, true);
 window.addEventListener('resize', (event) => {
+	if(paused) return;
 	if(window.innerHeight > window.innerWidth / 2) {
 		gameArea.canvas.width = window.innerWidth;
 		gameArea.canvas.height = window.innerWidth / 2;
@@ -397,5 +416,4 @@ window.addEventListener('resize', (event) => {
 		gameArea.canvas.width = window.innerHeight * 2;
 		gameArea.canvas.height = window.innerHeight;
 	}
-	console.log("muie");
 });
