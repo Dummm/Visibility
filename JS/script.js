@@ -12,6 +12,9 @@ var col_P2 			= "#FFFFFF";
 var col_B 			= "#FFFFFF";
 
 function startGame() {
+	document.getElementById("gamePlayButton")
+		.setAttribute("style", "display: none;");
+
 	P1 = new Player(98, 50, 1, 20, col_P1, 1, 0.5);
 	P2 = new Player(2,  50, 1, 20, col_P2, 1, 0.5);
 	B =  new Ball	 (50, 50, 2, 4,  col_B , 1);
@@ -40,16 +43,10 @@ function loop(timestamp) {
 var gameArea = {
 	canvas : document.getElementById("gameArea"),
 	start : function() {
-		if(window.innerHeight > window.innerWidth / 2) {
-			this.canvas.width = window.innerWidth;
-			this.canvas.height = window.innerWidth / 2;
-		}
-		else {
-			this.canvas.width = window.innerHeight * 2;
-			this.canvas.height = window.innerHeight;
-		}
+		this.resize(this.canvas.parentElement);
 		this.context = this.canvas.getContext("2d");
 		paused = false;
+		this.resize(this.canvas.parentElement);
 	},
 	clear : function() {
 		this.context = this.canvas.getContext("2d");
@@ -59,6 +56,16 @@ var gameArea = {
 	},
 	screenRatio : function() {
 		return [(this.canvas.width  / 100), (this.canvas.height / 100)];
+	},
+	resize: function(element) {
+		if(element.offsetHeight > element.offsetWidth / 2) {
+			this.canvas.width = element.offsetWidth;
+			this.canvas.height = element.offsetWidth / 2;
+		}
+		else {
+			this.canvas.width = element.offsetHeight * 2;
+			this.canvas.height = element.offsetHeight;
+		}
 	}
 };
 
@@ -325,7 +332,7 @@ function gameCollisions() {
 					//B.velocityX *= -1;
 					dif = Math.abs(B.Y - player.Y);
 					magn = Math.sqrt(B.velocityX * B.velocityX + B.velocityY * B.velocityY);
-					angle = (-(dif * 45 / (player.height / 2)) + 180) * Math.sign(B.Y - player.Y);
+					angle = (-(dif * 60 / (player.height / 2)) + 180) * Math.sign(B.Y - player.Y);
 					B.velocityX = Math.cos(angle * (Math.PI / 180)) * magn;
 					B.velocityY = Math.sin(angle * (Math.PI / 180)) * magn;
 					B.X = player.left - B.width / 2;
@@ -336,7 +343,7 @@ function gameCollisions() {
 					//B.velocityX *= -1;
 					dif = Math.abs(B.Y - player.Y);
 					magn = Math.sqrt(B.velocityX * B.velocityX + B.velocityY * B.velocityY);
-					angle = (dif * 45 / (player.height / 2)) * Math.sign(B.Y - player.Y);
+					angle = (dif * 60 / (player.height / 2)) * Math.sign(B.Y - player.Y);
 					B.velocityX = Math.cos(angle * (Math.PI / 180)) * magn;
 					B.velocityY = Math.sin(angle * (Math.PI / 180)) * magn;
 					B.X = player.right + B.width / 2;
@@ -387,8 +394,10 @@ function drawGameArea() {
 function drawUI() {
 	p1Score.draw();
 	p2Score.draw();
+	/*
 	document.getElementById("gameTitle")
 		.setAttribute("style", "color: " + col_Title + ";");
+	*/
 }
 function drawObjects() {
 	P1.draw();
@@ -408,6 +417,7 @@ window.addEventListener('keyup', function(e) {
 }, true);
 window.addEventListener('resize', (event) => {
 	if(paused) return;
+	/*
 	if(window.innerHeight > window.innerWidth / 2) {
 		gameArea.canvas.width = window.innerWidth;
 		gameArea.canvas.height = window.innerWidth / 2;
@@ -415,5 +425,6 @@ window.addEventListener('resize', (event) => {
 	else {
 		gameArea.canvas.width = window.innerHeight * 2;
 		gameArea.canvas.height = window.innerHeight;
-	}
+	}*/
+	gameArea.resize(gameArea.canvas.parentElement);
 });
