@@ -154,6 +154,11 @@ window.onload = function() {
 			appControls.addPointToPolygon(new Point(x, y));
 		}
 	);
+	document.querySelector("#appControls").addEventListener(
+		"click", function(e) {
+			(e.srcElement || e.target).classList.toggle("closed");
+		}
+	);
 
 	start();
 	appView.clear();
