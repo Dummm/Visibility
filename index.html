@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+	<link rel="stylesheet" href="CSS/styles.css">
+	<title>Visibility</title>
+</head>
+<body>
+	<div id="appContainer">
+		<canvas id="app"></canvas>
+	</div>
+	<div id="appControls">
+		<div id="polygonControls" class="appControl">
+			<h3>Poligon</h3>
+			<div class="appInfo">
+			</div>
+			<div class="appInput">
+				<input type="number" name="xPolygonPoint" id="xPolygonPoint" value="0" step="10">
+				<input type="number" name="yPolygonPoint" id="yPolygonPoint" value="0" step="10">
+				<input type="button" name="addPolygonPoint" id="addPolygonPoint" value="+">
+			</div>
+		</div>
+		<div id="pointsControls" class="appControl">
+			<h3>Puncte</h3>
+			<div class="appInfo">
+			</div>
+			<div class="appInput">
+				<input type="number" name="xPoint" id="xPoint" value="0" step="10">
+				<input type="number" name="yPoint" id="yPoint" value="0" step="10">
+				<input type="button" name="addPoint" id="addPoint" value="+">
+			</div>
+		</div>
+		<div id="result">
+			<input type="button" value="Calculeaza">
+		</div>
+	</div>
+<script src="JS/script.js"></script>
+</body>
+</html>
