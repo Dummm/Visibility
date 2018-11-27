@@ -24,11 +24,11 @@ var appView = {
 	resize: function() {
 		var element = this.canvas.parentElement;
 		if(element.offsetHeight > element.offsetWidth) {
-			this.canvas.width = element.offsetWidth;
+			this.canvas.width  = element.offsetWidth;
 			this.canvas.height = element.offsetWidth;
 		}
 		else {
-			this.canvas.width = element.offsetHeight;
+			this.canvas.width  = element.offsetHeight;
 			this.canvas.height = element.offsetHeight;
 		}
 	}
@@ -40,9 +40,18 @@ var appControls = {
 		function(p) {
 			P.addPoint(p);
 			var par = document.createElement("p");
+			/*
 			par.appendChild(
-				document.createTextNode(p.X + " " + p.Y)
+				document.createTextNode(
+					"(" + p.X + ",&emsp;" + p.Y + ")"
+				)
 			);
+			*/
+			par.innerHTML = "(" + p.X + ",&emsp;" + p.Y + ")";
+			par.addEventListener("click", function(e) {
+				(e.srcElement || e.target).parentElement.removeChild(e.srcElement || e.target);
+				P.removePoint(p);
+			});
 			this.polygonControls.appendChild(par);
 		}
 };
@@ -121,6 +130,12 @@ class Polygon {
 		this.points.push(p);
 		console.log("Added point " + p.X + ", " + p.Y + " to polygon");
 	}
+	removePoint(p) {
+		console.log("Removed point " + p.X + ", " + p.Y + " to polygon");
+		this.points.splice(
+			this.points.indexOf(p), 1
+		);
+	}
 	draw() {
 		if(!this.points[0]) return;
 		var ctx = appView.context;
@@ -151,11 +166,11 @@ window.onload = function() {
 		"click", function() {
 			var x = document.querySelector("#xPolygonPoint").value;
 			var y = document.querySelector("#yPolygonPoint").value;
-			appControls.addPointToPolygon(new Point(x, y));
+			appControls.addPointToPolygon(new Point(x, 100 - y));
 		}
 	);
-	document.querySelector("#appControls").addEventListener(
-		"click", function(e) {
+	document.querySelector("#appControls")
+		.addEventListener("click", function(e) {
 			(e.srcElement || e.target).classList.toggle("closed");
 		}
 	);
@@ -163,6 +178,6 @@ window.onload = function() {
 	start();
 	appView.clear();
 };
-window.addEventListener('resize', (event) => {
+window.addEventListener('resize', () => {
 	appView.resize();
 });

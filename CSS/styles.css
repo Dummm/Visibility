@@ -48,7 +48,7 @@ html, body {
 	bottom: 0;
 	right: 0;
 	width: 100%;
-	height: 33vh;
+	height: 50vh;
 
 	display: grid;
 	grid-template-columns: repeat(2, 1fr);
@@ -64,7 +64,7 @@ html, body {
 
 }
 #appControls.closed {
-	bottom: -30vh;
+	bottom: -47vh;
 }
 #appControls::after {
 	content: "▲";
@@ -74,6 +74,12 @@ html, body {
 	width: 100%;
 	text-align: center;
 	background-color: rgba(61, 61, 61, 0.75);
+}
+#appControls > .appControl {
+	display: flex;
+	flex-direction: column;
+	margin: 1.5rem 1rem .5rem 1rem;
+	grid-row: 1 / 5;
 }
 #appControls .appControl input {
 	border-radius: 1rem;
@@ -88,31 +94,54 @@ html, body {
 	line-height: 1rem;
 	color: rgb(255, 59, 59);
 }
-#appControls > .appControl {
-	display: flex;
-	flex-direction: column;
-	margin: 1.5rem 1rem .5rem 1rem;
-	grid-row: 1 / 5;
-}
 #appControls .appInfo {
 	flex: 1;
 	overflow: hidden auto;
-}
-#appControls .appInfo p:nth-child(2n) {
-	background-color: rgba(150, 150, 150, 0.8);
-}
-#appControls .appInfo p:nth-child(2n+1) {
 	background-color: rgba(125, 125, 125, 0.8);
+}
+#appControls .appInfo p:nth-child(2n + 1) {
+	background-color: rgba(150, 150, 150, 0.8);
 }
 #appControls .appInput {
 	display: grid;
-	grid-template-columns: repeat(3, 1fr);
-	grid-gap: 1rem;
-	padding-top: 0.5rem;
+	grid-template-areas:
+		'n1 b'
+		'n2 b';
+	grid-gap: .5rem;
+	align-content: center;
+	justify-content: stretch;
+	padding-top: .5rem;
 	border-top: dashed 1px #EFEFEF;
+}
+@media screen and (max-width: 550px) {
+	#appControls .appInput {
+		display: grid;
+		grid-template-areas:
+			'n1'
+			'n2'
+			'b';
+		grid-gap: .5rem;
+		align-content: center;
+		justify-content: stretch;
+		padding-top: .5rem;
+		border-top: dashed 1px #EFEFEF;
+	}
 }
 #appControls .appInput input {
 	height: 1.5rem;
+}
+#appControls .appInput input[type=number]:nth-child(1) {
+	grid-area: n1;
+}
+#appControls .appInput input[type=number]:nth-child(2) {
+	grid-area: n2;
+}
+#appControls .appInput input[type=button] {
+	grid-area: b;
+	min-height: 1.5rem;
+	min-width: 3rem;
+	height: 100%;
+	width: 100%;
 }
 #appControls #result {
 	grid-column: 1 / 3;
