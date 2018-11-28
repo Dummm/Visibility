@@ -99,6 +99,18 @@ html, body {
 	overflow: hidden auto;
 	background-color: rgba(125, 125, 125, 0.8);
 }
+#appControls .appInfo p {
+	display: flex;
+	justify-content: space-between;
+	align-content: center;
+	align-items: center;
+	padding: .15rem;
+}
+#appControls .appInfo p:hover::after {
+	content: "🞭";
+	float: right;
+	line-height: 100%;
+}
 #appControls .appInfo p:nth-child(2n + 1) {
 	background-color: rgba(150, 150, 150, 0.8);
 }
