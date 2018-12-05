@@ -59,10 +59,15 @@ function pointsIntersect(A1,A2,A3,A4){
                 }        
         } else {
             return {
-                X: undefined,
+                X: -1,
                 Y: 0
             }
         }
+	} else {
+		return {
+			X: -1,
+			Y: -1
+		}
 }
 }
 //////////////////////////////////////////////////////////////////
@@ -114,6 +119,7 @@ function findClosestIntersection(Poly, camera){
 	/* Finds the closest intersection of the rays and the segments */
     /* Input:
 		Poly - A polygon type object.
+		camera- A point type object.
 	/* Return values:
 		 intersections - An array of type Points objects.
 
@@ -121,6 +127,7 @@ function findClosestIntersection(Poly, camera){
 	var intersections=[];
     var segments = [];
     var raysegments = [];
+	//Constrcting segments from the points of Polygon//
     for(let i=0;i<Poly.points.length-1;i++){
         seg = new Segment;
         seg.AX = Poly.points[i].X;
@@ -135,19 +142,23 @@ function findClosestIntersection(Poly, camera){
     seg.BX = Poly.points[Poly.points.length-1].X;
     seg.BY = Poly.points[Poly.points.length-1].Y;
     segments.push(seg);
-    
-    for(let i=0;i<Poly.points.length;i++){
+	//console.log(segments);
+	//-----------------------------------------------//
+	
+	//Constructing  rays from the camera point to all the points of the Polygon//
+    for(let i=0;i<Poly.points.length;i++){ 
         seg = new Segment;
         seg.AX = camera.X;
         seg.AY = camera.Y;
         seg.BX = Poly.points[i].X;
         seg.BY = Poly.points[i].Y;
-
         raysegments.push(seg);
     }
-	a=Poly.points;
-	var len=a.length;
+	//-------------------------------------------------------------------------//
 	//console.log(raysegments);
+	console.log(segments.length);
+	console.log(raysegments.length);
+	//For every ray segment check every Polygon segment if they intersect and find the closest points //
     for(let i=0; i<raysegments.length;i++){
         let x1 = new Point;
         let x2 = new Point;
@@ -155,7 +166,6 @@ function findClosestIntersection(Poly, camera){
         x1.Y = raysegments[i].AY;
         x2.X = raysegments[i].BX;
         x2.Y = raysegments[i].BY;
-        //console.log("With ray " + i + "\n");
         rez = new Point(999,999,0,4);
 
         for(let j=0; j<segments.length;j++){
@@ -165,10 +175,10 @@ function findClosestIntersection(Poly, camera){
             x3.Y = segments[j].AY;
             x4.X = segments[j].BX;
             x4.Y = segments[j].BY;
-            //console.log(x1,x2,x3,x4);
-            
-            if(pointsIntersect(x1,x2,x3,x4).X!=undefined){
-                //console.log(rez.X + "," + rez.Y);
+
+            				console.log(pointsIntersect(x1,x2,x3,x4));
+
+            if(pointsIntersect(x1,x2,x3,x4).X!=-1){
                 if(distance(pointsIntersect(x1,x2,x3,x4),camera) < distance(rez,camera)){
                     rez = pointsIntersect(x1,x2,x3,x4);
                 }
@@ -177,18 +187,18 @@ function findClosestIntersection(Poly, camera){
         intersections.push(rez);
     }
     return intersections;
-	
+	//-------------------------------------------------------------------------------------------------//
 }
 
 
 
 window.onload = function() {
-    a1 = new Point(0,0,0,4);
-    a2 = new Point(5,2,0,4);
-    a3 = new Point(4,6,0,4);
-    a4 = new Point(8,4,0,4);
-    a5 = new Point(4,11,0,4);
-    a6 = new Point(0,6,0,4);
+    a1 = new Point(3,3,0,4);
+    a2 = new Point(4,7,0,4);
+    a3 = new Point(8,9,0,4);
+    a4 = new Point(9,6,0,4);
+    a5 = new Point(6,5,0,4);
+    a6 = new Point(5,3,0,4);
 	var p=[];
 	p.push(a1);
 	p.push(a2);
@@ -197,6 +207,6 @@ window.onload = function() {
     p.push(a5);
     p.push(a6);
     pol=new Polygon(p,4);
-	cam=new Point(2,3,0,0);
+	cam=new Point(8,6,0,0);
     console.log(findClosestIntersection(pol,cam));
 }
