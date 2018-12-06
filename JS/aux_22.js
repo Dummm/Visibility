@@ -153,6 +153,30 @@ function findClosestIntersection(Poly, camera){
         seg.BX = Poly.points[i].X;
         seg.BY = Poly.points[i].Y;
         raysegments.push(seg);
+		
+		var panta=(seg.BY-seg.AY)/(seg.BX-seg.AX);
+		var panta_1= panta+0.0001;
+		var panta_2= panta-0.0001;
+		
+		if(seg.AY<seg.BY)
+		{
+			var point_poz=(100-seg.AY+seg.AX*panta_1)/panta_1;
+			var point_neg=(100-seg.AY+seg.AX*panta_2)/panta_2;
+			var seg_poz=new Segment(seg.AX,seg.AY,point_poz,100);
+			var seg_neg=new Segment(seg.AX,seg.AY,point_neg,100);
+			raysegments.push(seg_poz);
+			raysegments.push(seg_neg);
+		}
+		else
+		{
+			var point_poz=(0-seg.AY+seg.AX*panta_1)/panta_1;
+			var point_neg=(0-seg.AY+seg.AX*panta_2)/panta_2;
+			var seg_poz=new Segment(seg.AX,seg.AY,point_poz,0);
+			var seg_neg=new Segment(seg.AX,seg.AY,point_neg,0);
+			raysegments.push(seg_poz);
+			raysegments.push(seg_neg);
+		}
+		
     }
 	//-------------------------------------------------------------------------//
 	//console.log(raysegments);
@@ -186,6 +210,7 @@ function findClosestIntersection(Poly, camera){
         }
         intersections.push(rez);
     }
+	intersections.sort(function(a,b){return a.X - b.X});
     return intersections;
 	//-------------------------------------------------------------------------------------------------//
 }
@@ -193,12 +218,14 @@ function findClosestIntersection(Poly, camera){
 
 
 window.onload = function() {
-    a1 = new Point(3,3,0,4);
-    a2 = new Point(4,7,0,4);
-    a3 = new Point(8,9,0,4);
-    a4 = new Point(9,6,0,4);
-    a5 = new Point(6,5,0,4);
-    a6 = new Point(5,3,0,4);
+    a1 = new Point(1,1,0,4);
+    a2 = new Point(3,1,0,4);
+    a3 = new Point(5,2,0,4);
+    a4 = new Point(3,3,0,4);
+    a5 = new Point(5,4,0,4);
+    a6 = new Point(1,6,0,4);
+	a7 = new Point(1,1,0,4);
+
 	var p=[];
 	p.push(a1);
 	p.push(a2);
@@ -206,7 +233,8 @@ window.onload = function() {
 	p.push(a4);
     p.push(a5);
     p.push(a6);
+	p.push(a7);
     pol=new Polygon(p,4);
-	cam=new Point(8,6,0,0);
+	cam=new Point(4,4,0,0);
     console.log(findClosestIntersection(pol,cam));
 }
