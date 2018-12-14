@@ -33,7 +33,8 @@ html, body {
 
 #appContainer {
 	width: 100%;
-	height: 100%;
+	height: calc(100% - 3.1vh);
+	margin-bottom: 3.1vh;
 
 	display: flex;
 	justify-content: center;

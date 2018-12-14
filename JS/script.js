@@ -22,91 +22,12 @@ class Point {
 		);
 	}
 }
-function prod_vect(a,b) {
-    var n = 0, lim = Math.min(a.length,b.length);
-    for (var i = 0; i < lim; i++) 
-        n += a[i] * b[i];
-    return n;
- }
-
-function norma(a) {
-    var patrate = 0; 
-    for (var i = 0; i < a.length; i++) 
-        patrate += a[i]*a[i]; 
-    return Math.sqrt(patrate);
-}
-function cosinus(a, b) {
-    return prod_vect(a,b) / (norma(a)*norma(b));
-}
-
-// Gaseste intersectia dintre o raza si un segment
-function getIntersection(ray,segment){
-	// RAY in parametric: Point + Delta*U
-	// s = (raza_x2 - raza_x1, raza_y2 - raza_y1)
-    // r = (segm_x2 - segm_x1, segm_y2 - segm_y1)
-    // (raza_x1, raza_y1) = (raza_x2, raza_y2) + U*s
-    // (segm_x1, segm_y1) = (segm_x2, segm_y2) + V*r
-    var raza_x1 = ray.a.X,                 raza_y1 = ray.a.Y;
-	var raza_x2 = ray.b.X-ray.a.X,         raza_y2 = ray.b.Y-ray.a.Y;
-	var segm_x1 = segment.a.X,             segm_y1 = segment.a.Y;
-	var segm_x2 = segment.b.X-segment.a.X, segm_y2 = segment.b.Y-segment.a.Y;
-
-
-    
-    // Pentru a gasi punctul de intersectie rezolvam sistemul:
-    // (raza_x1, raza_y1) + U*s = (segm_x1, segm_y1) + V*r
-    //  ====
-    // Folosind produsul vectorial cu s avem:
-    // (raza_x1, raza_y1) x s + U * (s x s) = (segm_x1, segm_y1) x s + V * (r x s)
-    //                                  ^ = 0
-    // V = ( (raza_x1, raza_y1) x s - (segm_x1, segm_y1) x s ) / (r x s)
-    // V = ( ((raza_x1, raza_y1) - (segm_x1, segm_y1)) x s ) / (r x s)
-    // V = ((raza_x1 - segm_x1, raza_y1 - segm_y1) x s) / (r x s)
-    
-    // Folosind produsul vectorial cu r avem:
-    // (raza_x1, raza_y1) x r + U * (s x r) = (segm_x1, segm_y1) x r + V * (r x r)
-    //                                                                          ^ = 0
-    // U = ( (segm_x1, segm_y1) x r - (raza_x1, raza_y1) x r) / (s x r)
-    // U = ( ((segm_x1, segm_y1) - (raza_x1, raza_y1)) x r ) / (s x r)
-    // U = ((segm_x1 - raza_x1, segm_y1 - raza_y1) x r) / (s x r)
-    //
-    // stim ca (s x r) = - (r x s)
-    // (s x r) = (raza_x2 - raza_x1)*(segm_y2 - segm_y1) - (raza_y2 - raza_y1)*(segm_x2 - segm_x1)
-    // (segm_x1 - raza_x1, segm_y1 - raza_y1) x s) = (segm_x1 - raza_x1)*(raza_y2 - raza_y1) - (segm_y1 - raza_y1)*(raza_x2 - raza_x1)
-    // (raza_x1 - segm_x1, raza_y1 - segm_y1) x r) = (raza_x1 - segm_x1)*(segm_y2 - segm_y1) - (raza_y1 - segm_y1)*(segm_x2 - segm_x1)
-    //
-//        var U = ((segm_x1 - raza_x1)*(raza_y2 - raza_y1) - (segm_y1 - raza_y1)*(raza_x2 - raza_x1))/
-//            ((raza_x2 - raza_x1)*(segm_y2 - segm_y1) - (raza_y2 - raza_y1)*(segm_x2 - segm_x1));
-//        var V = -((raza_x1 - segm_x1)*(segm_y2 - segm_y1) - (raza_y1 - segm_y1)*(segm_x2 - segm_x1))/
-//            ((raza_x2 - raza_x1)*(segm_y2 - segm_y1) - (raza_y2 - raza_y1)*(segm_x2 - segm_x1))
-
-    
-    
-    // Raza si segmentul se intersecteaza => sistemul:
-	// raza_x1 + raza_x2 * U = segm_x1 + segm_x2 * V => U = (segm_x1 + segm_x2 * V - raza_x1) / raza_x2
-    // raza_y1 + raza_y2 * U = segm_y1 + segm_y2 * V => U = (segm_y1 + segm_y2 * V - raza_y1) / raza_y2
-    // Avem deci (segm_x1 + segm_x2 * V - raza_x1) / raza_x1 = (segm_y1 + segm_y2 * V - raza_y1) / raza_y1 <==>
-    //      <==> (segm_x1 * raza_y2 - raza_x1*raza_y2 + segm_x2 * raza_y2 * V) = (segm_y1 * raza_x2 - raza_x2*raza_y1 + segm_y2 * raza_x2 * V) <==>
-    //      <==> V = (segm_x1*raza_y2 - raza_x1*raza_y2 - segm_y1*raza_x2 + raza_x2*raza_y1) / (segm_y2 * raza_x2 - segm_x2 * raza_y2)
-	
-    var V = (segm_x1*raza_y2 - raza_x1*raza_y2 - segm_y1*raza_x2 + raza_x2*raza_y1) / (segm_y2 * raza_x2 - segm_x2 * raza_y2);//(raza_x2*(segm_y1-raza_y1) + raza_y2*(raza_x1-segm_x1))/(segm_x2*raza_y2 - segm_y2*raza_x2)
-	var U = (segm_x1+segm_x2*V-raza_x1)/raza_x2;
-    // Testam daca cei 2 vectori sunt paraleli (adica cosinusul unghiului dintre ei este 1)
-    if (cosinus({raza_x2,raza_y2}, {segm_x2,segm_y2}) == 1) {
-        return null;
-    }
-    if(U<0) return null;
-	if(V<0 || V>1) return null;
-	return {
-		X: raza_x1+raza_x2*U,
-		Y: raza_y1+raza_y2*U,
-		param: U
-	};
-}
 class Polygon {
-	constructor(points = [], color = "#FF0000") {
+	constructor(points = [], lineWidth = 2, color = "#FF0000", fill = false) {
 		this.points = points;
+		this.lineWidth = lineWidth;
 		this.color = color;
+		this.fill = fill;
 	}
 	addPoint(p) {
 		this.points.push(p);
@@ -123,22 +44,22 @@ class Polygon {
 		var ctx = appView.context;
 		ctx.beginPath();
 		ctx.strokeStyle = this.color;
+		ctx.lineWidth = this.lineWidth;
+
+		if(this.fill) ctx.fillStyle = this.color;
+		else		 ctx.fillStyle = "#00000000";
 		ctx.moveTo(
 			appView.screenRatio()[0] * this.points[0].X,
 			appView.screenRatio()[1] * (100 - this.points[0].Y)
 		);
 		for(let i = 0; i < this.points.length; i++) {
-			ctx.lineWidth = 10;
-			ctx.lineTo(
-				appView.screenRatio()[0] * this.points[i].X,
-				appView.screenRatio()[1] * (100 - this.points[i].Y)
-			);
-			ctx.lineWidth = 2;
 			ctx.lineTo(
 				appView.screenRatio()[0] * this.points[i].X,
 				appView.screenRatio()[1] * (100 - this.points[i].Y)
 			);
 		}
+		//ctx.closePath();
+		ctx.fill();
 		ctx.stroke();
 	}
 }
@@ -222,10 +143,10 @@ var cursor = {
 
 			p.X = Math.round(p.X / 5) * 5;
 			p.Y = Math.round(p.Y / 5) * 5;
-            p.Y = 100 - p.Y;
+			p.Y = 100 - p.Y;
 
 			this.position = p;
-            //console.log(this.position);
+			//console.log(this.position);
 		},
 		draw: function() {
 			var size = 10;
@@ -241,8 +162,8 @@ var cursor = {
 };
 
 function start() {
-	P = new Polygon([], "#FF0000");
-    P2 = new Polygon([], "#0000FF");
+	P  = new Polygon([], 1.5, "#2D2D2D", false);
+	P2 = new Polygon([], 1.5, "#0000FF", false);
 	appView.start();
 	window.requestAnimationFrame(loop);
 }
@@ -262,7 +183,7 @@ function loop(timestamp) {
 	}
 	drawApp();
 	P.draw();
-    P2.draw();
+	P2.draw();
 	cursor.draw();
 
   lastRender = timestamp;
@@ -295,12 +216,14 @@ window.onload = function() {
 		"click", function() {
 			var x = document.querySelector("#xPolygonPoint").value;
 			var y = document.querySelector("#yPolygonPoint").value;
-			appControls.addPointToPolygon(new Point(x, 100 - y));
+			appControls.addPointToPolygon(new Point(x, y));
 		}
 	);
 	document.querySelector("#result").addEventListener(
 		"click", function() {
-            P2.points = intersectieApropiata(P, new Point(50, 50));
+			P2.points = intersectieApropiata(P, new Point(50, 50));
+			P.fill = true;
+			P2.fill = true;
 		}
 	);
 	document.querySelector("#appContainer")
@@ -336,97 +259,170 @@ window.addEventListener('resize', () => {
 	appView.resize();
 });
 
-///--------------------------------------------------
+function prod_vect(a, b) {
+	var n = 0, lim = Math.min(a.length, b.length);
+	for (var i = 0; i < lim; i++)
+		n += a[i] * b[i];
+	return n;
+}
+function norma(a) {
+	var patrate = 0;
+	for (var i = 0; i < a.length; i++)
+		patrate += a[i] * a[i];
+	return Math.sqrt(patrate);
+}
+function cosinus(a, b) {
+	return prod_vect(a, b) / (norma(a) * norma(b));
+}
+// Gaseste intersectia dintre o raza si un segment
+function getIntersection(ray,segment){
+	// RAY in parametric: Point + Delta*U
+	// s = (raza_x2 - raza_x1, raza_y2 - raza_y1)
+	// r = (segm_x2 - segm_x1, segm_y2 - segm_y1)
+	// (raza_x1, raza_y1) = (raza_x2, raza_y2) + U*s
+	// (segm_x1, segm_y1) = (segm_x2, segm_y2) + V*r
+	var raza_x1 = ray.a.X,                 raza_y1 = ray.a.Y;
+	var raza_x2 = ray.b.X-ray.a.X,         raza_y2 = ray.b.Y-ray.a.Y;
+	var segm_x1 = segment.a.X,             segm_y1 = segment.a.Y;
+	var segm_x2 = segment.b.X-segment.a.X, segm_y2 = segment.b.Y-segment.a.Y;
 
+	// Pentru a gasi punctul de intersectie rezolvam sistemul:
+	// (raza_x1, raza_y1) + U*s = (segm_x1, segm_y1) + V*r
+	//  ====
+	// Folosind produsul vectorial cu s avem:
+	// (raza_x1, raza_y1) x s + U * (s x s) = (segm_x1, segm_y1) x s + V * (r x s)
+	//                                  ^ = 0
+	// V = ( (raza_x1, raza_y1) x s - (segm_x1, segm_y1) x s ) / (r x s)
+	// V = ( ((raza_x1, raza_y1) - (segm_x1, segm_y1)) x s ) / (r x s)
+	// V = ((raza_x1 - segm_x1, raza_y1 - segm_y1) x s) / (r x s)
 
+	// Folosind produsul vectorial cu r avem:
+	// (raza_x1, raza_y1) x r + U * (s x r) = (segm_x1, segm_y1) x r + V * (r x r)
+	//                                                                          ^ = 0
+	// U = ( (segm_x1, segm_y1) x r - (raza_x1, raza_y1) x r) / (s x r)
+	// U = ( ((segm_x1, segm_y1) - (raza_x1, raza_y1)) x r ) / (s x r)
+	// U = ((segm_x1 - raza_x1, segm_y1 - raza_y1) x r) / (s x r)
+	//
+	// stim ca (s x r) = - (r x s)
+	// (s x r) = (raza_x2 - raza_x1)*(segm_y2 - segm_y1) - (raza_y2 - raza_y1)*(segm_x2 - segm_x1)
+	// (segm_x1 - raza_x1, segm_y1 - raza_y1) x s) = (segm_x1 - raza_x1)*(raza_y2 - raza_y1) - (segm_y1 - raza_y1)*(raza_x2 - raza_x1)
+	// (raza_x1 - segm_x1, raza_y1 - segm_y1) x r) = (raza_x1 - segm_x1)*(segm_y2 - segm_y1) - (raza_y1 - segm_y1)*(segm_x2 - segm_x1)
+	//
+	//        var U = ((segm_x1 - raza_x1)*(raza_y2 - raza_y1) - (segm_y1 - raza_y1)*(raza_x2 - raza_x1))/
+	//            ((raza_x2 - raza_x1)*(segm_y2 - segm_y1) - (raza_y2 - raza_y1)*(segm_x2 - segm_x1));
+	//        var V = -((raza_x1 - segm_x1)*(segm_y2 - segm_y1) - (raza_y1 - segm_y1)*(segm_x2 - segm_x1))/
+	//            ((raza_x2 - raza_x1)*(segm_y2 - segm_y1) - (raza_y2 - raza_y1)*(segm_x2 - segm_x1))
+
+	// Raza si segmentul se intersecteaza => sistemul:
+	// raza_x1 + raza_x2 * U = segm_x1 + segm_x2 * V => U = (segm_x1 + segm_x2 * V - raza_x1) / raza_x2
+	// raza_y1 + raza_y2 * U = segm_y1 + segm_y2 * V => U = (segm_y1 + segm_y2 * V - raza_y1) / raza_y2
+	// Avem deci (segm_x1 + segm_x2 * V - raza_x1) / raza_x1 = (segm_y1 + segm_y2 * V - raza_y1) / raza_y1 <==>
+	//      <==> (segm_x1 * raza_y2 - raza_x1*raza_y2 + segm_x2 * raza_y2 * V) = (segm_y1 * raza_x2 - raza_x2*raza_y1 + segm_y2 * raza_x2 * V) <==>
+	//      <==> V = (segm_x1*raza_y2 - raza_x1*raza_y2 - segm_y1*raza_x2 + raza_x2*raza_y1) / (segm_y2 * raza_x2 - segm_x2 * raza_y2)
+
+	var V = (segm_x1*raza_y2 - raza_x1*raza_y2 - segm_y1*raza_x2 + raza_x2*raza_y1) / (segm_y2 * raza_x2 - segm_x2 * raza_y2);//(raza_x2*(segm_y1-raza_y1) + raza_y2*(raza_x1-segm_x1))/(segm_x2*raza_y2 - segm_y2*raza_x2)
+	var U = (segm_x1+segm_x2*V-raza_x1)/raza_x2;
+	// Testam daca cei 2 vectori sunt paraleli (adica cosinusul unghiului dintre ei este 1)
+	if (cosinus({raza_x2,raza_y2}, {segm_x2,segm_y2}) == 1) {
+			return null;
+	}
+	if(U<0) return null;
+	if(V<0 || V>1) return null;
+	return {
+		X: raza_x1+raza_x2*U,
+		Y: raza_y1+raza_y2*U,
+		param: U
+	};
+}
 function intersectieApropiata(Poly, camera) {
-    // q = (x1, y1)
-    // q + s = (x2, y2)
-    // s = (x2 - x1, y2 - y1)
-    puncte = Poly.points;
-    var segmente = [];
-    for(var i = 0; i < puncte.length-1; i++) {
-        segmente.push({
-            a:{X:puncte[i].X, Y:puncte[i].Y}, 
-            b:{X:puncte[i+1].X, Y:puncte[i+1].Y}
-        });
-    }
-    segmente.push({
-        a:{X:puncte[puncte.length-1].X, Y:puncte[puncte.length-1].Y}, 
-        b:{X:puncte[0].X, Y:puncte[0].Y}
-    });    
-    
-    var puncte = (function(segmente){
+	// q = (x1, y1)
+	// q + s = (x2, y2)
+	// s = (x2 - x1, y2 - y1)
+	puncte = Poly.points;
+	var segmente = [];
+	for(var i = 0; i < puncte.length-1; i++) {
+			segmente.push({
+					a:{X:puncte[i].X, Y:puncte[i].Y},
+					b:{X:puncte[i+1].X, Y:puncte[i+1].Y}
+			});
+	}
+	segmente.push({
+			a:{X:puncte[puncte.length-1].X, Y:puncte[puncte.length-1].Y},
+			b:{X:puncte[0].X, Y:puncte[0].Y}
+	});
+
+	var puncte = (function(segmente) {
 		var a = [];
 		segmente.forEach(
-            function(seg){
-                a.push(seg.a,seg.b);
-            }
-        );
+			function(seg) {
+				a.push(seg.a,seg.b);
+			}
+		);
 		return a;
-	})(segmente);
-    
-    var uniquePoints = (function(puncte){
-        var set = {};
-        return puncte.filter(function(p){
-            var key = p.X+","+p.Y;
-            if(key in set){
-                return false;
-            }else{
-                set[key]=true;
-                return true;
-            }
-        });
-    })(puncte);
-    
-    var uniqueAngles = [];
-	for(var j=0;j<uniquePoints.length;j++){
+	}) (segmente);
+
+	var uniquePoints = (function(puncte) {
+		var set = {};
+		return puncte.filter(function(p) {
+			var key = p.X + ", " + p.Y;
+			if(key in set) {
+					return false;
+			}
+			else {
+					set[key] = true;
+					return true;
+			}
+		});
+	})(puncte);
+
+	var uniqueAngles = [];
+	for(var j = 0; j < uniquePoints.length; j++) {
 		var uniquePoint = uniquePoints[j];
-		var theta = Math.atan2( uniquePoint.Y-camera.Y, uniquePoint.X-camera.X );
+		var theta = Math.atan2(uniquePoint.Y - camera.Y, uniquePoint.X - camera.X );
 		uniquePoint.unghi = theta;
-        uniqueAngles.push(theta - 0.00001);
-		uniqueAngles.push(theta          );
-        uniqueAngles.push(theta + 0.00001);
+		uniqueAngles.push(theta - 0.00001);
+		uniqueAngles.push(theta);
+		uniqueAngles.push(theta + 0.00001);
 	}
-    
-    var intersectii = [];
-	for(var j=0;j<uniqueAngles.length;j++){
+
+	var intersectii = [];
+	for(var j = 0; j < uniqueAngles.length; j++) {
 		var unghi = uniqueAngles[j];
-        
+
 		// Calculam sin si cos pentru a gasi un punct pe aceeasi dreapta
 		var x_cos = Math.cos(unghi);
 		var y_cos = Math.sin(unghi);
 		var raza = {
-			a:{ 
-                X: camera.X, 
-                Y: camera.Y
-            },
-			b:{
-                X: camera.X + x_cos,
-                Y: camera.Y + y_cos
-            },
-            ang: unghi
+			a: {
+				X: camera.X,
+				Y: camera.Y
+			},
+			b: {
+				X: camera.X + x_cos,
+				Y: camera.Y + y_cos
+			},
+			ang: unghi
 		};
 
-        var intersectMin = null;
-		for(var i=0;i<segmente.length;i++){
-			var intersect = getIntersection(raza,segmente[i]);
+		var intersectMin = null;
+		for(var i = 0; i < segmente.length; i++) {
+			var intersect = getIntersection(raza, segmente[i]);
 			if(!intersect) continue;
-			if(!intersectMin || intersect.param < intersectMin.param){
-				intersectMin=intersect;
-                intersectMin.unghi = raza.ang;
+			if(!intersectMin || intersect.param < intersectMin.param) {
+				intersectMin = intersect;
+				intersectMin.unghi = raza.ang;
 			}
 		}
 
 		intersectii.push(intersectMin);
 	}
-    
-    // Sortam dupa unghiul polar:
-    intersectii.sort( (a,b)=>{return a.unghi - b.unghi} );
-    
-    // Adaugam un segment de la primul punct la ultimul
-    intersectii.push(intersectii[0]);
-    
-    return intersectii;
+
+	// Sortam dupa unghiul polar:
+	intersectii.sort((a, b) => {return a.unghi - b.unghi;});
+
+	// Adaugam un segment de la primul punct la ultimul
+	intersectii.push(intersectii[0]);
+
+	return intersectii;
 }
 
