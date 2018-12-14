@@ -22,44 +22,85 @@ class Point {
 		);
 	}
 }
+function prod_vect(a,b) {
+    var n = 0, lim = Math.min(a.length,b.length);
+    for (var i = 0; i < lim; i++) 
+        n += a[i] * b[i];
+    return n;
+ }
 
-///-------------------------------------------
+function norma(a) {
+    var patrate = 0; 
+    for (var i = 0; i < a.length; i++) 
+        patrate += a[i]*a[i]; 
+    return Math.sqrt(patrate);
+}
+function cosinus(a, b) {
+    return prod_vect(a,b) / (norma(a)*norma(b));
+}
 
-///------------------------------------
-// Find intersection of RAY & SEGMENT
+// Gaseste intersectia dintre o raza si un segment
 function getIntersection(ray,segment){
-	// RAY in parametric: Point + Delta*T1
-	var r_px = ray.a.X;
-	var r_py = ray.a.Y;
-	var r_dx = ray.b.X-ray.a.X;
-	var r_dy = ray.b.Y-ray.a.Y;
-	// SEGMENT in parametric: Point + Delta*T2
-	var s_px = segment.a.X;
-	var s_py = segment.a.Y;
-	var s_dx = segment.b.X-segment.a.X;
-	var s_dy = segment.b.Y-segment.a.Y;
-	// Are they parallel? If so, no intersect
-	var r_mag = Math.sqrt(r_dx*r_dx+r_dy*r_dy);
-	var s_mag = Math.sqrt(s_dx*s_dx+s_dy*s_dy);
-	if(r_dx/r_mag==s_dx/s_mag && r_dy/r_mag==s_dy/s_mag){
-		// Unit vectors are the same.
-		return null;
-	}
-	// SOLVE FOR T1 & T2
-	// r_px+r_dx*T1 = s_px+s_dx*T2 && r_py+r_dy*T1 = s_py+s_dy*T2
-	// ==> T1 = (s_px+s_dx*T2-r_px)/r_dx = (s_py+s_dy*T2-r_py)/r_dy
-	// ==> s_px*r_dy + s_dx*T2*r_dy - r_px*r_dy = s_py*r_dx + s_dy*T2*r_dx - r_py*r_dx
-	// ==> T2 = (r_dx*(s_py-r_py) + r_dy*(r_px-s_px))/(s_dx*r_dy - s_dy*r_dx)
-	var T2 = (r_dx*(s_py-r_py) + r_dy*(r_px-s_px))/(s_dx*r_dy - s_dy*r_dx);
-	var T1 = (s_px+s_dx*T2-r_px)/r_dx;
-	// Must be within parametic whatevers for RAY/SEGMENT
-	if(T1<0) return null;
-	if(T2<0 || T2>1) return null;
-	// Return the POINT OF INTERSECTION
+	// RAY in parametric: Point + Delta*U
+	// s = (raza_x2 - raza_x1, raza_y2 - raza_y1)
+    // r = (segm_x2 - segm_x1, segm_y2 - segm_y1)
+    // (raza_x1, raza_y1) = (raza_x2, raza_y2) + U*s
+    // (segm_x1, segm_y1) = (segm_x2, segm_y2) + V*r
+    var raza_x1 = ray.a.X,                 raza_y1 = ray.a.Y;
+	var raza_x2 = ray.b.X-ray.a.X,         raza_y2 = ray.b.Y-ray.a.Y;
+	var segm_x1 = segment.a.X,             segm_y1 = segment.a.Y;
+	var segm_x2 = segment.b.X-segment.a.X, segm_y2 = segment.b.Y-segment.a.Y;
+
+
+    
+    // Pentru a gasi punctul de intersectie rezolvam sistemul:
+    // (raza_x1, raza_y1) + U*s = (segm_x1, segm_y1) + V*r
+    //  ====
+    // Folosind produsul vectorial cu s avem:
+    // (raza_x1, raza_y1) x s + U * (s x s) = (segm_x1, segm_y1) x s + V * (r x s)
+    //                                  ^ = 0
+    // V = ( (raza_x1, raza_y1) x s - (segm_x1, segm_y1) x s ) / (r x s)
+    // V = ( ((raza_x1, raza_y1) - (segm_x1, segm_y1)) x s ) / (r x s)
+    // V = ((raza_x1 - segm_x1, raza_y1 - segm_y1) x s) / (r x s)
+    
+    // Folosind produsul vectorial cu r avem:
+    // (raza_x1, raza_y1) x r + U * (s x r) = (segm_x1, segm_y1) x r + V * (r x r)
+    //                                                                          ^ = 0
+    // U = ( (segm_x1, segm_y1) x r - (raza_x1, raza_y1) x r) / (s x r)
+    // U = ( ((segm_x1, segm_y1) - (raza_x1, raza_y1)) x r ) / (s x r)
+    // U = ((segm_x1 - raza_x1, segm_y1 - raza_y1) x r) / (s x r)
+    //
+    // stim ca (s x r) = - (r x s)
+    // (s x r) = (raza_x2 - raza_x1)*(segm_y2 - segm_y1) - (raza_y2 - raza_y1)*(segm_x2 - segm_x1)
+    // (segm_x1 - raza_x1, segm_y1 - raza_y1) x s) = (segm_x1 - raza_x1)*(raza_y2 - raza_y1) - (segm_y1 - raza_y1)*(raza_x2 - raza_x1)
+    // (raza_x1 - segm_x1, raza_y1 - segm_y1) x r) = (raza_x1 - segm_x1)*(segm_y2 - segm_y1) - (raza_y1 - segm_y1)*(segm_x2 - segm_x1)
+    //
+//        var U = ((segm_x1 - raza_x1)*(raza_y2 - raza_y1) - (segm_y1 - raza_y1)*(raza_x2 - raza_x1))/
+//            ((raza_x2 - raza_x1)*(segm_y2 - segm_y1) - (raza_y2 - raza_y1)*(segm_x2 - segm_x1));
+//        var V = -((raza_x1 - segm_x1)*(segm_y2 - segm_y1) - (raza_y1 - segm_y1)*(segm_x2 - segm_x1))/
+//            ((raza_x2 - raza_x1)*(segm_y2 - segm_y1) - (raza_y2 - raza_y1)*(segm_x2 - segm_x1))
+
+    
+    
+    // Raza si segmentul se intersecteaza => sistemul:
+	// raza_x1 + raza_x2 * U = segm_x1 + segm_x2 * V => U = (segm_x1 + segm_x2 * V - raza_x1) / raza_x2
+    // raza_y1 + raza_y2 * U = segm_y1 + segm_y2 * V => U = (segm_y1 + segm_y2 * V - raza_y1) / raza_y2
+    // Avem deci (segm_x1 + segm_x2 * V - raza_x1) / raza_x1 = (segm_y1 + segm_y2 * V - raza_y1) / raza_y1 <==>
+    //      <==> (segm_x1 * raza_y2 - raza_x1*raza_y2 + segm_x2 * raza_y2 * V) = (segm_y1 * raza_x2 - raza_x2*raza_y1 + segm_y2 * raza_x2 * V) <==>
+    //      <==> V = (segm_x1*raza_y2 - raza_x1*raza_y2 - segm_y1*raza_x2 + raza_x2*raza_y1) / (segm_y2 * raza_x2 - segm_x2 * raza_y2)
+	
+    var V = (segm_x1*raza_y2 - raza_x1*raza_y2 - segm_y1*raza_x2 + raza_x2*raza_y1) / (segm_y2 * raza_x2 - segm_x2 * raza_y2);//(raza_x2*(segm_y1-raza_y1) + raza_y2*(raza_x1-segm_x1))/(segm_x2*raza_y2 - segm_y2*raza_x2)
+	var U = (segm_x1+segm_x2*V-raza_x1)/raza_x2;
+    // Testam daca cei 2 vectori sunt paraleli (adica cosinusul unghiului dintre ei este 1)
+    if (cosinus({raza_x2,raza_y2}, {segm_x2,segm_y2}) == 1) {
+        return null;
+    }
+    if(U<0) return null;
+	if(V<0 || V>1) return null;
 	return {
-		X: r_px+r_dx*T1,
-		Y: r_py+r_dy*T1,
-		param: T1
+		X: raza_x1+raza_x2*U,
+		Y: raza_y1+raza_y2*U,
+		param: U
 	};
 }
 class Polygon {
@@ -259,7 +300,7 @@ window.onload = function() {
 	);
 	document.querySelector("#result").addEventListener(
 		"click", function() {
-            P2.points = findClosestIntersection(P, new Point(50, 50));
+            P2.points = intersectieApropiata(P, new Point(50, 50));
 		}
 	);
 	document.querySelector("#appContainer")
@@ -298,76 +339,94 @@ window.addEventListener('resize', () => {
 ///--------------------------------------------------
 
 
-function findClosestIntersection(Poly, camera) {
+function intersectieApropiata(Poly, camera) {
     // q = (x1, y1)
     // q + s = (x2, y2)
     // s = (x2 - x1, y2 - y1)
-    points = Poly.points;
-    var segments = [];
-    for(var i = 0; i < points.length-1; i++) {
-        segments.push({a:{X:points[i].X, Y:points[i].Y}, b:{X:points[i+1].X, Y:points[i+1].Y}});
+    puncte = Poly.points;
+    var segmente = [];
+    for(var i = 0; i < puncte.length-1; i++) {
+        segmente.push({
+            a:{X:puncte[i].X, Y:puncte[i].Y}, 
+            b:{X:puncte[i+1].X, Y:puncte[i+1].Y}
+        });
     }
-    segments.push({a:{X:points[points.length-1].X, Y:points[points.length-1].Y}, b:{X:points[0].X, Y:points[0].Y}});    
-    var points = (function(segments){
+    segmente.push({
+        a:{X:puncte[puncte.length-1].X, Y:puncte[puncte.length-1].Y}, 
+        b:{X:puncte[0].X, Y:puncte[0].Y}
+    });    
+    
+    var puncte = (function(segmente){
 		var a = [];
-		segments.forEach(function(seg){
-			a.push(seg.a,seg.b);
-		});
+		segmente.forEach(
+            function(seg){
+                a.push(seg.a,seg.b);
+            }
+        );
 		return a;
-	})(segments);
-    //console.log(segments);
-    var uniquePoints = (function(points){
-    var set = {};
-    return points.filter(function(p){
-        var key = p.X+","+p.Y;
-        if(key in set){
-            return false;
-        }else{
-            set[key]=true;
-            return true;
-        }
-    });
-    })(points);
+	})(segmente);
+    
+    var uniquePoints = (function(puncte){
+        var set = {};
+        return puncte.filter(function(p){
+            var key = p.X+","+p.Y;
+            if(key in set){
+                return false;
+            }else{
+                set[key]=true;
+                return true;
+            }
+        });
+    })(puncte);
     
     var uniqueAngles = [];
 	for(var j=0;j<uniquePoints.length;j++){
 		var uniquePoint = uniquePoints[j];
-		var angle = Math.atan2(uniquePoint.Y-camera.Y,uniquePoint.X-camera.X);
-		uniquePoint.angle = angle;
-		uniqueAngles.push(angle- 0.00001, angle, angle + 0.00001);
+		var theta = Math.atan2( uniquePoint.Y-camera.Y, uniquePoint.X-camera.X );
+		uniquePoint.unghi = theta;
+        uniqueAngles.push(theta - 0.00001);
+		uniqueAngles.push(theta          );
+        uniqueAngles.push(theta + 0.00001);
 	}
-    //console.log(uniqueAngles);
     
-    var intersects = [];
+    var intersectii = [];
 	for(var j=0;j<uniqueAngles.length;j++){
-		var angle = uniqueAngles[j];
-		// Calculez sin si cos pentru un punct pe aceeasi dreapta de unghi angle
-		var dx = Math.cos(angle);
-		var dy = Math.sin(angle);
-		// Gasesc un punct mai incolo pe dreapta
-		var ray = {
-			a:{X:camera.X,Y:camera.Y},
-			b:{X:camera.X+dx,Y:camera.Y+dy},
-            ang: angle
+		var unghi = uniqueAngles[j];
+        
+		// Calculam sin si cos pentru a gasi un punct pe aceeasi dreapta
+		var x_cos = Math.cos(unghi);
+		var y_cos = Math.sin(unghi);
+		var raza = {
+			a:{ 
+                X: camera.X, 
+                Y: camera.Y
+            },
+			b:{
+                X: camera.X + x_cos,
+                Y: camera.Y + y_cos
+            },
+            ang: unghi
 		};
-		// Find CLOSEST intersection
-		var closestIntersect = null;
-		for(var i=0;i<segments.length;i++){
-			var intersect = getIntersection(ray,segments[i]);
+
+        var intersectMin = null;
+		for(var i=0;i<segmente.length;i++){
+			var intersect = getIntersection(raza,segmente[i]);
 			if(!intersect) continue;
-			if(!closestIntersect || intersect.param<closestIntersect.param){
-				closestIntersect=intersect;
-                closestIntersect.angle = ray.ang;
+			if(!intersectMin || intersect.param < intersectMin.param){
+				intersectMin=intersect;
+                intersectMin.unghi = raza.ang;
 			}
 		}
-        //console.log(ray);
-		// Add to list of intersects
-		intersects.push(closestIntersect);
+
+		intersectii.push(intersectMin);
 	}
-    //console.log(uniqueAngles);
-    intersects.sort((a,b)=>{return a.angle - b.angle});
-    intersects.push(intersects[0]);
-    console.log(intersects);
-    return intersects;
+    
+    // Sortam dupa unghiul polar:
+    intersectii.sort( (a,b)=>{return a.unghi - b.unghi} );
+    
+    // Adaugam un segment de la primul punct la ultimul
+    intersectii.push(intersectii[0]);
+    
+    return intersectii;
 }
 
