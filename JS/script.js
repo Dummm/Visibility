@@ -154,6 +154,7 @@ var appControls = {
 			this.polygonControls.appendChild(par);
 		}
 };
+/*
 var cursor = {
 	position: new Point(0, 0),
 	updatePosition: function(e) {
@@ -181,13 +182,31 @@ var cursor = {
 		);
 	}
 };
+*/
+class Cursor extends Point {
+  constructor(X, Y, size, color) {
+		super(X, Y, size, color);
+	}
+	updatePosition(e) {
+		var c = appView.canvas;
+		this.X = ((e.clientX  - c.offsetLeft)  /  appView.screenRatio()[0]);
+		this.Y = ((e.clientY  - c.offsetTop)   /  appView.screenRatio()[1]);
+
+		this.X = Math.round(this.X / 5) * 5;
+		this.Y = Math.round(this.Y / 5) * 5;
+		this.Y = 100 - this.Y;
+
+		//console.log(this.position);
+	}
+};
+
 class Camera extends Point {
   constructor(X, Y, size, color, speed = 1) {
 		super(X, Y, size, color);
 		this.speed = speed;
 	}
 
-	setPosition(x, y) {
+	updatePosition(x, y) {
 		if(x > 100) 			this.X = 100;
 		else if(x < 0) 		this.X = 0;
 		else 							this.X = x;
@@ -215,6 +234,7 @@ function start() {
 	P  = new Polygon([], 1.5, "#2D2D2D", false);
 	P2 = new Polygon([], 1.5, "#0000FF", false, 1);
 	C = new Camera(50, 50, 2, "#FF00FF", 5);
+	cursor = new Cursor(0, 0, 1.5, "#FF0000");
 	appView.start();
 	window.requestAnimationFrame(loop);
 }
@@ -277,6 +297,9 @@ window.onload = function() {
 				}
 				default: break;
 			}
+			P2.points = intersectieApropiata(P, C);
+			P.fill = true;
+			P2.fill = true;
 	});
 	document.querySelector("#addPolygonPoint").addEventListener(
 		"click", function() {
@@ -287,7 +310,7 @@ window.onload = function() {
 	);
 	document.querySelector("#addPoint").addEventListener(
 		"click", function() {
-			C.setPosition(
+			C.updatePosition(
 				parseInt(document.querySelector("#xPoint").value),
 				parseInt(document.querySelector("#yPoint").value)
 			);
@@ -295,7 +318,7 @@ window.onload = function() {
 	);
 	document.querySelector("#xPoint").addEventListener(
 		"change", function() {
-			C.setPosition(
+			C.updatePosition(
 				parseInt(document.querySelector("#xPoint").value),
 				parseInt(document.querySelector("#yPoint").value)
 			);
@@ -303,7 +326,7 @@ window.onload = function() {
 	);
 	document.querySelector("#yPoint").addEventListener(
 		"change", function() {
-			C.setPosition(
+			C.updatePosition(
 				parseInt(document.querySelector("#xPoint").value),
 				parseInt(document.querySelector("#yPoint").value)
 			);
@@ -319,8 +342,8 @@ window.onload = function() {
 	document.querySelector("#appContainer")
 		.addEventListener("click", function() {
 			appControls.addPointToPolygon(new Point(
-				cursor.position.X,
-				cursor.position.Y
+				cursor.X,
+				cursor.Y
 				));
 			/*
 			var c = appView.canvas;
