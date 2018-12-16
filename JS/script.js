@@ -23,11 +23,12 @@ class Point {
 	}
 }
 class Polygon {
-	constructor(points = [], lineWidth = 2, color = "#FF0000", fill = false) {
+	constructor(points = [], lineWidth = 2, color = "#FF0000", fill = false, type = 0) {
 		this.points = points;
 		this.lineWidth = lineWidth;
 		this.color = color;
 		this.fill = fill;
+		this.type = type;
 	}
 	addPoint(p) {
 		this.points.push(p);
@@ -46,13 +47,33 @@ class Polygon {
 		ctx.strokeStyle = this.color;
 		ctx.lineWidth = this.lineWidth;
 
-		if(this.fill) ctx.fillStyle = this.color;
+		if(this.fill) {
+			ctx.fillStyle = this.color;
+			if(this.type == 1)
+				ctx.strokeStyle = "#FFFFFF";
+		}
+
+
 		else		 ctx.fillStyle = "#00000000";
 		ctx.moveTo(
 			appView.screenRatio()[0] * this.points[0].X,
 			appView.screenRatio()[1] * (100 - this.points[0].Y)
 		);
 		for(let i = 0; i < this.points.length; i++) {
+			if(this.type == 1) {
+				ctx.lineTo(
+					appView.screenRatio()[0] * this.points[i].X,
+					appView.screenRatio()[1] * (100 - this.points[i].Y)
+				);
+				ctx.lineTo(
+					appView.screenRatio()[0] * C.X,
+					appView.screenRatio()[1] * (100 - C.Y)
+				);
+				ctx.lineTo(
+					appView.screenRatio()[0] * this.points[i].X,
+					appView.screenRatio()[1] * (100 - this.points[i].Y)
+				);
+			}
 			ctx.lineTo(
 				appView.screenRatio()[0] * this.points[i].X,
 				appView.screenRatio()[1] * (100 - this.points[i].Y)
@@ -192,7 +213,7 @@ class Camera extends Point {
 
 function start() {
 	P  = new Polygon([], 1.5, "#2D2D2D", false);
-	P2 = new Polygon([], 1.5, "#0000FF", false);
+	P2 = new Polygon([], 1.5, "#0000FF", false, 1);
 	C = new Camera(50, 50, 2, "#FF00FF", 5);
 	appView.start();
 	window.requestAnimationFrame(loop);
