@@ -16,7 +16,7 @@ class Point {
 		ctx.fillStyle = this.color;
 		ctx.fillRect(
 			(this.X - this.size / 2) * appView.screenRatio()[0],
-			(this.Y - this.size / 2) * appView.screenRatio()[1],
+			(100 - this.Y - this.size / 2) * appView.screenRatio()[1],
 			this.size * appView.screenRatio()[0],
 			this.size * appView.screenRatio()[1]
 		);
@@ -134,36 +134,66 @@ var appControls = {
 		}
 };
 var cursor = {
-		position: new Point(0, 0),
-		updatePosition: function(e) {
-			var p = new Point();
-			var c = appView.canvas;
-			p.X = ((e.clientX  - c.offsetLeft)  /  appView.screenRatio()[0]);
-			p.Y = ((e.clientY  - c.offsetTop)   /  appView.screenRatio()[1]);
+	position: new Point(0, 0),
+	updatePosition: function(e) {
+		var p = new Point();
+		var c = appView.canvas;
+		p.X = ((e.clientX  - c.offsetLeft)  /  appView.screenRatio()[0]);
+		p.Y = ((e.clientY  - c.offsetTop)   /  appView.screenRatio()[1]);
 
-			p.X = Math.round(p.X / 5) * 5;
-			p.Y = Math.round(p.Y / 5) * 5;
-			p.Y = 100 - p.Y;
+		p.X = Math.round(p.X / 5) * 5;
+		p.Y = Math.round(p.Y / 5) * 5;
+		p.Y = 100 - p.Y;
 
-			this.position = p;
-			//console.log(this.position);
-		},
-		draw: function() {
-			var size = 10;
-			var ctx = appView.context;
-			ctx.fillStyle = "#FF0000";
-			ctx.fillRect(
-				appView.screenRatio()[0] * this.position.X - (size / 2),
-				appView.screenRatio()[1] * (100 - this.position.Y) - (size / 2),
-				size,
-				size
-			);
-		}
+		this.position = p;
+		//console.log(this.position);
+	},
+	draw: function() {
+		var size = 10;
+		var ctx = appView.context;
+		ctx.fillStyle = "#FF0000";
+		ctx.fillRect(
+			appView.screenRatio()[0] * this.position.X - (size / 2),
+			appView.screenRatio()[1] * (100 - this.position.Y) - (size / 2),
+			size,
+			size
+		);
+	}
 };
+class Camera extends Point {
+  constructor(X, Y, size, color, speed = 1) {
+		super(X, Y, size, color);
+		this.speed = speed;
+	}
+
+	setPosition(x, y) {
+		if(x > 100) 			this.X = 100;
+		else if(x < 0) 		this.X = 0;
+		else 							this.X = x;
+
+		if(y > 100) 			this.Y = 100;
+		else if(y <   0) 	this.Y = 0;
+		else 							this.Y = y;
+	}
+
+	moveUp() {
+		this.Y = Math.min(this.Y + this.speed, 100);
+	};
+	moveDown() {
+		this.Y = Math.max(this.Y - this.speed, 0);
+	};
+	moveLeft() {
+		this.X = Math.max(this.X - this.speed, 0);
+	};
+	moveRight() {
+		this.X = Math.min(this.X + this.speed, 100);
+	};
+}
 
 function start() {
 	P  = new Polygon([], 1.5, "#2D2D2D", false);
 	P2 = new Polygon([], 1.5, "#0000FF", false);
+	C = new Camera(50, 50, 2, "#FF00FF", 5);
 	appView.start();
 	window.requestAnimationFrame(loop);
 }
@@ -185,6 +215,7 @@ function loop(timestamp) {
 	P.draw();
 	P2.draw();
 	cursor.draw();
+	C.draw();
 
   lastRender = timestamp;
   window.requestAnimationFrame(loop);
@@ -210,8 +241,22 @@ function drawApp() {
 
 	//new Point(50, 50, 1, "#FF0000").draw();
 }
-
 window.onload = function() {
+	window.addEventListener(
+		"keydown", function(e) {
+			switch(e.keyCode) {
+				case 37: C.moveLeft(); 	break;
+				case 38: C.moveUp();		break;
+				case 39: C.moveRight();	break;
+				case 40: C.moveDown();	break;
+				case 13: {
+					P2.points = intersectieApropiata(P, C);
+					P.fill = true;
+					P2.fill = true;
+				}
+				default: break;
+			}
+	});
 	document.querySelector("#addPolygonPoint").addEventListener(
 		"click", function() {
 			var x = document.querySelector("#xPolygonPoint").value;
@@ -219,9 +264,33 @@ window.onload = function() {
 			appControls.addPointToPolygon(new Point(x, y));
 		}
 	);
+	document.querySelector("#addPoint").addEventListener(
+		"click", function() {
+			C.setPosition(
+				parseInt(document.querySelector("#xPoint").value),
+				parseInt(document.querySelector("#yPoint").value)
+			);
+		}
+	);
+	document.querySelector("#xPoint").addEventListener(
+		"change", function() {
+			C.setPosition(
+				parseInt(document.querySelector("#xPoint").value),
+				parseInt(document.querySelector("#yPoint").value)
+			);
+		}
+	);
+	document.querySelector("#yPoint").addEventListener(
+		"change", function() {
+			C.setPosition(
+				parseInt(document.querySelector("#xPoint").value),
+				parseInt(document.querySelector("#yPoint").value)
+			);
+		}
+	);
 	document.querySelector("#result").addEventListener(
 		"click", function() {
-			P2.points = intersectieApropiata(P, new Point(50, 50));
+			P2.points = intersectieApropiata(P, C);
 			P.fill = true;
 			P2.fill = true;
 		}
