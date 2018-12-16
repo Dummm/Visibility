@@ -1,6 +1,3 @@
-var lastRender = 0;
-var components = [];
-
 var col_BGMain 	= "#FAFAFA";
 var col_Grid 		= "#EFEFEF";
 
@@ -83,7 +80,52 @@ class Polygon {
 		ctx.fill();
 		ctx.stroke();
 	}
-}
+};
+class Cursor extends Point {
+  constructor(X, Y, size, color) {
+		super(X, Y, size, color);
+	}
+	updatePosition(e) {
+		var c = appView.canvas;
+		this.X = ((e.clientX  - c.offsetLeft)  /  appView.screenRatio()[0]);
+		this.Y = ((e.clientY  - c.offsetTop)   /  appView.screenRatio()[1]);
+
+		this.X = Math.round(this.X / 5) * 5;
+		this.Y = Math.round(this.Y / 5) * 5;
+		this.Y = 100 - this.Y;
+
+		//console.log(this.position);
+	}
+};
+class Camera extends Point {
+  constructor(X, Y, size, color, speed = 1) {
+		super(X, Y, size, color);
+		this.speed = speed;
+	}
+
+	updatePosition(x, y) {
+		if(x > 100) 			this.X = 100;
+		else if(x < 0) 		this.X = 0;
+		else 							this.X = x;
+
+		if(y > 100) 			this.Y = 100;
+		else if(y <   0) 	this.Y = 0;
+		else 							this.Y = y;
+	}
+
+	moveUp() {
+		this.Y = Math.min(this.Y + this.speed, 100);
+	};
+	moveDown() {
+		this.Y = Math.max(this.Y - this.speed, 0);
+	};
+	moveLeft() {
+		this.X = Math.max(this.X - this.speed, 0);
+	};
+	moveRight() {
+		this.X = Math.min(this.X + this.speed, 100);
+	};
+};
 
 var appView = {
 	canvas: document.getElementById("app"),
@@ -154,82 +196,6 @@ var appControls = {
 			this.polygonControls.appendChild(par);
 		}
 };
-/*
-var cursor = {
-	position: new Point(0, 0),
-	updatePosition: function(e) {
-		var p = new Point();
-		var c = appView.canvas;
-		p.X = ((e.clientX  - c.offsetLeft)  /  appView.screenRatio()[0]);
-		p.Y = ((e.clientY  - c.offsetTop)   /  appView.screenRatio()[1]);
-
-		p.X = Math.round(p.X / 5) * 5;
-		p.Y = Math.round(p.Y / 5) * 5;
-		p.Y = 100 - p.Y;
-
-		this.position = p;
-		//console.log(this.position);
-	},
-	draw: function() {
-		var size = 10;
-		var ctx = appView.context;
-		ctx.fillStyle = "#FF0000";
-		ctx.fillRect(
-			appView.screenRatio()[0] * this.position.X - (size / 2),
-			appView.screenRatio()[1] * (100 - this.position.Y) - (size / 2),
-			size,
-			size
-		);
-	}
-};
-*/
-class Cursor extends Point {
-  constructor(X, Y, size, color) {
-		super(X, Y, size, color);
-	}
-	updatePosition(e) {
-		var c = appView.canvas;
-		this.X = ((e.clientX  - c.offsetLeft)  /  appView.screenRatio()[0]);
-		this.Y = ((e.clientY  - c.offsetTop)   /  appView.screenRatio()[1]);
-
-		this.X = Math.round(this.X / 5) * 5;
-		this.Y = Math.round(this.Y / 5) * 5;
-		this.Y = 100 - this.Y;
-
-		//console.log(this.position);
-	}
-};
-
-class Camera extends Point {
-  constructor(X, Y, size, color, speed = 1) {
-		super(X, Y, size, color);
-		this.speed = speed;
-	}
-
-	updatePosition(x, y) {
-		if(x > 100) 			this.X = 100;
-		else if(x < 0) 		this.X = 0;
-		else 							this.X = x;
-
-		if(y > 100) 			this.Y = 100;
-		else if(y <   0) 	this.Y = 0;
-		else 							this.Y = y;
-	}
-
-	moveUp() {
-		this.Y = Math.min(this.Y + this.speed, 100);
-	};
-	moveDown() {
-		this.Y = Math.max(this.Y - this.speed, 0);
-	};
-	moveLeft() {
-		this.X = Math.max(this.X - this.speed, 0);
-	};
-	moveRight() {
-		this.X = Math.min(this.X + this.speed, 100);
-	};
-}
-
 function start() {
 	P  = new Polygon([], 1.5, "#2D2D2D", false);
 	P2 = new Polygon([], 1.5, "#0000FF", false, 1);
@@ -237,30 +203,16 @@ function start() {
 	cursor = new Cursor(0, 0, 1.5, "#FF0000");
 	appView.start();
 	window.requestAnimationFrame(loop);
-}
-function loop(timestamp) {
-  var progress = timestamp - lastRender;
-	progress /= 16;
-
-	if(!paused) {
-		/*
-		updateGameInfo();
-		updateObjects(progress);
-
-		drawGameArea();
-		drawUI();
-		drawObjects();
-		*/
-	}
+};
+function loop() {
 	drawApp();
 	P.draw();
 	P2.draw();
 	cursor.draw();
 	C.draw();
 
-  lastRender = timestamp;
   window.requestAnimationFrame(loop);
-}
+};
 function drawApp() {
 	appView.clear();
 	var ctx = appView.context;
@@ -281,10 +233,10 @@ function drawApp() {
 	}
 
 	//new Point(50, 50, 1, "#FF0000").draw();
-}
+};
+
 window.onload = function() {
-	window.addEventListener(
-		"keydown", function(e) {
+	window.addEventListener("keydown", function(e) {
 			switch(e.keyCode) {
 				case 37: C.moveLeft(); 	break;
 				case 38: C.moveUp();		break;
@@ -301,92 +253,71 @@ window.onload = function() {
 			P.fill = true;
 			P2.fill = true;
 	});
-	document.querySelector("#addPolygonPoint").addEventListener(
-		"click", function() {
-			var x = document.querySelector("#xPolygonPoint").value;
-			var y = document.querySelector("#yPolygonPoint").value;
-			appControls.addPointToPolygon(new Point(x, y));
-		}
-	);
-	document.querySelector("#addPoint").addEventListener(
-		"click", function() {
-			C.updatePosition(
-				parseInt(document.querySelector("#xPoint").value),
-				parseInt(document.querySelector("#yPoint").value)
-			);
-		}
-	);
-	document.querySelector("#xPoint").addEventListener(
-		"change", function() {
-			C.updatePosition(
-				parseInt(document.querySelector("#xPoint").value),
-				parseInt(document.querySelector("#yPoint").value)
-			);
-		}
-	);
-	document.querySelector("#yPoint").addEventListener(
-		"change", function() {
-			C.updatePosition(
-				parseInt(document.querySelector("#xPoint").value),
-				parseInt(document.querySelector("#yPoint").value)
-			);
-		}
-	);
-	document.querySelector("#result").addEventListener(
-		"click", function() {
-			P2.points = intersectieApropiata(P, C);
-			P.fill = true;
-			P2.fill = true;
-		}
-	);
-	document.querySelector("#appContainer")
-		.addEventListener("click", function() {
-			appControls.addPointToPolygon(new Point(
+	window.addEventListener('resize', function() {
+		appView.resize();
+	});
+	document.querySelector("#appContainer").addEventListener("click", function() {
+		appControls.addPointToPolygon(
+			new Point(
 				cursor.X,
 				cursor.Y
-				));
-			/*
-			var c = appView.canvas;
-			appControls.addPointToPolygon(new Point(
-				((e.clientX  - c.offsetLeft)  /  appView.screenRatio()[0]),
-				((e.clientY  - c.offsetTop)   /  appView.screenRatio()[1])
-				));
-			*/
-		}
-	);
-	document.querySelector("#appContainer")
-		.addEventListener("mousemove", function(e) {
-			cursor.updatePosition(e);
-		}
-	);
-	document.querySelector("#appControls")
-		.addEventListener("click", function(e) {
-			(e.srcElement || e.target).classList.toggle("closed");
-		}
-	);
+			)
+		);
+	});
+	document.querySelector("#appContainer").addEventListener("mousemove", function(e) {
+		cursor.updatePosition(e);
+	});
+	document.querySelector("#appControls").addEventListener("click", function(e) {
+		(e.srcElement || e.target).classList.toggle("closed");
+	});
+	document.querySelector("#addPolygonPoint").addEventListener("click", function() {
+		var x = document.querySelector("#xPolygonPoint").value;
+		var y = document.querySelector("#yPolygonPoint").value;
+		appControls.addPointToPolygon(new Point(x, y));
+	});
+	document.querySelector("#addPoint").addEventListener("click", function() {
+		C.updatePosition(
+			parseInt(document.querySelector("#xPoint").value),
+			parseInt(document.querySelector("#yPoint").value)
+		);
+	});
+	document.querySelector("#xPoint").addEventListener("change", function() {
+		C.updatePosition(
+			parseInt(document.querySelector("#xPoint").value),
+			parseInt(document.querySelector("#yPoint").value)
+		);
+	});
+	document.querySelector("#yPoint").addEventListener("change", function() {
+		C.updatePosition(
+			parseInt(document.querySelector("#xPoint").value),
+			parseInt(document.querySelector("#yPoint").value)
+		);
+	});
+	document.querySelector("#result").addEventListener("click", function() {
+		P2.points = intersectieApropiata(P, C);
+		P.fill = true;
+		P2.fill = true;
+	});
 
 	start();
 	appView.clear();
 };
-window.addEventListener('resize', () => {
-	appView.resize();
-});
 
 function prod_vect(a, b) {
 	var n = 0, lim = Math.min(a.length, b.length);
 	for (var i = 0; i < lim; i++)
 		n += a[i] * b[i];
 	return n;
-}
+};
 function norma(a) {
 	var patrate = 0;
 	for (var i = 0; i < a.length; i++)
 		patrate += a[i] * a[i];
 	return Math.sqrt(patrate);
-}
+};
 function cosinus(a, b) {
 	return prod_vect(a, b) / (norma(a) * norma(b));
-}
+};
 // Gaseste intersectia dintre o raza si un segment
 function getIntersection(ray,segment){
 	// RAY in parametric: Point + Delta*U
@@ -446,7 +377,7 @@ function getIntersection(ray,segment){
 		Y: raza_y1+raza_y2*U,
 		param: U
 	};
-}
+};
 function intersectieApropiata(Poly, camera) {
 	// q = (x1, y1)
 	// q + s = (x2, y2)
@@ -537,5 +468,5 @@ function intersectieApropiata(Poly, camera) {
 	intersectii.push(intersectii[0]);
 
 	return intersectii;
-}
+};
 
