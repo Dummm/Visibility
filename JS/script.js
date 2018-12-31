@@ -47,7 +47,7 @@ class Polygon {
 		if(this.fill) {
 			ctx.fillStyle = this.color;
 			if(this.type == 1)
-				ctx.strokeStyle = "#FFFFFF";
+				ctx.strokeStyle = "#ADD8E6";
 		}
 
 
