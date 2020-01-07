@@ -1,6 +1,6 @@
 # Visibility
 Visibility polygon generator for Computational Geometry course.
-Mostly worked on the front-end.
+Mostly worked on the UI.
 
 ## Screenshots
 <table>
